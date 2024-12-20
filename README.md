@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # vue-project
 
 This template should help get you started developing with Vue 3 in Vite.
@@ -27,3 +28,7 @@ npm run dev
 ```sh
 npm run build
 ```
+=======
+# 1218_project
+jiaoyu
+>>>>>>> 2bab2275b2f781e747b5f9d0df8b10404d8e045f
