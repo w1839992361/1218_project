@@ -1,19 +1,44 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { UserOutlined } from '@ant-design/icons-vue';
-import { useRouter,useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { onMounted } from 'vue';
 
 
 const current = ref(['home']);
 
+const navs = ref([
+    {
+        key: 'home',
+        name: '首页'
+    },
+    {
+        key: 'course',
+        name: '课程教学'
+    },
+    {
+        key: 'subject',
+        name: '专题教育'
+    },
+    {
+        key: 'practice',
+        name: '课后服务'
+    },
+]);
+
 const router = useRouter();
 const route = useRoute();
 
+watch(() => route.name, (newName) => {
+    const matchedNav = navs.value.find(nav => nav.key === newName);
+
+    if (matchedNav) {
+        current.value = [matchedNav.key];
+    }
+});
 
 onMounted(() => {
     current.value = [route.name];
-    console.log(current)
 })
 
 function selectedKeys({ key }) {
@@ -68,29 +93,8 @@ function selectedKeys({ key }) {
         <div class="nav">
             <div class="nav_left">
                 <a-menu @click="selectedKeys" style="width:100%;" v-model:selectedKeys="current" mode="horizontal">
-                    <a-menu-item key="home">
-                        <!-- <template #icon>
-                            <mail-outlined />
-                        </template> -->
-                        <h3>首页</h3>
-                    </a-menu-item>
-                    <a-menu-item key="course">
-                        <!-- <template #icon>
-                            <appstore-outlined />
-                        </template> -->
-                        <h3>课程教学</h3>
-                    </a-menu-item>
-                    <a-menu-item key="subject">
-                        <!-- <template #icon>
-                            <appstore-outlined />
-                        </template> -->
-                        <h3>专题教学</h3>
-                    </a-menu-item>
-                    <a-menu-item key="practice">
-                        <!-- <template #icon>
-                            <appstore-outlined />
-                        </template> -->
-                        <h3>课后服务</h3>
+                    <a-menu-item :key="item.key" v-for="item in navs">
+                        <h3>{{ item.name }}</h3>
                     </a-menu-item>
                 </a-menu>
             </div>
