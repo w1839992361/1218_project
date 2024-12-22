@@ -2,6 +2,7 @@
 import { LeftCircleOutlined, RightCircleOutlined } from '@ant-design/icons-vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { getList } from '@/api/home'
 
 const router = useRouter();
 
@@ -18,6 +19,8 @@ function gotoUrl(name, query) {
         query
     })
 }
+
+getList()
 
 
 const data = ref({

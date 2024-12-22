@@ -20,10 +20,10 @@ const navs = ref([
         key: 'subject',
         name: '专题教育'
     },
-    {
-        key: 'practice',
-        name: '课后服务'
-    },
+    // {
+    //     key: 'practice',
+    //     name: '课后服务'
+    // },
 ]);
 
 const router = useRouter();
@@ -82,7 +82,7 @@ function selectedKeys({ key }) {
         </div>
 
         <div class="login">
-            <a-button shape="round" type="primary" :ghost="true">
+            <a-button @click="$router.push('login')" shape="round" type="primary" :ghost="true">
                 <template #icon>
                     <UserOutlined />
                 </template>

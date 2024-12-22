@@ -8,36 +8,39 @@ const router = createRouter({
       path: '/',
       component: Layout,
       redirect:'/home',
+      meta: { title: '首页' },
       children: [
         {
           path: 'home',
           name:'home',
+          meta: { title: '首页' },
           component: () => import('../views/home/index.vue'),
         },
         {
           path: 'course',
           name: 'course',
+          meta: { title: '课程教学' },
           component: () => import('../views/course/index.vue'),
         },
         {
           path: 'subject',
           name: 'subject',
+          meta: { title: '专题教育' },
           component: () => import('../views/subject/index.vue'),
         },
         {
           path: 'practice',
           name: 'practice',
+          meta: { title: '课后服务' },
           component: () => import('../views/practice/index.vue'),
         },
       ],
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/login',
+      name: 'login',
+      meta: { title: '登录' },
+      component: () => import('../views/login/index.vue'),
     },
   ],
 })
