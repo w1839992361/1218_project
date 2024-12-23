@@ -1,27 +1,18 @@
 <script setup>
 import { onMounted, ref } from 'vue';
-import { renderAsync } from "docx-preview";
-let docx = import.meta.glob("docx-preview"); // vite不支持require 
 import JSZip from 'jszip';
-
-
-const files = [
-  'http://150.109.233.199/assets/1.doc',
-  'http://150.109.233.199/assets/1.docx',
-  'http://150.109.233.199/assets/1.ppt',
-  'http://150.109.233.199/assets/1.pptx',
-  'http://150.109.233.199/assets/1.xlsx',
-  'http://150.109.233.199/assets/1.xls',
-  'http://150.109.233.199/assets/1.mp4',
-  'http://150.109.233.199/assets/1.html',
-  'http://150.109.233.199/assets/1.txt',
-];
+import { parseStringPromise } from 'xml2js';
+import * as pdfjsLib from 'pdfjs-dist';
+import PptxGenJS from 'pptxgenjs';
+import mammoth from 'mammoth'; // 用于解析 Word 文件
+import * as XLSX from 'xlsx'; // 用于解析 Excel 文件
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'
 
 const props = defineProps({
   fileUrl: {
     type: String,
     required: true,
-    default: 'http://150.109.233.199/assets/1.pptx'
+    default: 'http://150.109.233.199/assets/1.doc',
   },
 });
 
@@ -30,15 +21,16 @@ const previewContent = ref('');
 
 
 const loadFilePreview = async () => {
-  const docxDiv = ref();
+  const pptPreview = ref();
   const fileExtension = props.fileUrl.split('.').pop().toLowerCase();
   fileType.value = fileExtension;
+
   if (fileExtension === 'pdf') {
     await renderPdf(props.fileUrl);
   } else if (['ppt', 'pptx'].includes(fileExtension)) {
-    await renderPptx(props.fileUrl);
+    await renderPptx(props.fileUrl, pptPreview);
   } else if (['doc', 'docx'].includes(fileExtension)) {
-    await renderDocx(props.fileUrl, docxDiv);
+    await renderDocx(props.fileUrl);
   } else if (['xls', 'xlsx'].includes(fileExtension)) {
     await renderExcel(props.fileUrl);
   } else if (['txt'].includes(fileExtension)) {
@@ -62,24 +54,10 @@ const renderPptx = async (url, dom) => {
 
 };
 
-const renderDocx = async (url, dom) => {
-  // 渲染文件内容
-  renderAsync(url, dom, null, {
-    inWrapper: true,
-    ignoreWidth: false,
-    ignoreHeight: false,
-    ignoreFonts: false,
-    breakPages: true,
-    ignoreLastRenderedPageBreak: true,
-    experimental: false,
-    trimXmlDeclaration: true,
-    debug: false,
-  });
+// 渲染 DOC/DOCX 文件
+const renderDocx = async (url) => {
 
 };
-
-
-
 
 // 渲染 Excel 文件
 const renderExcel = async (url) => {
@@ -107,11 +85,8 @@ onMounted(loadFilePreview);
       pdf
       <div ref="pptPreview"></div>
     </div>
-    <div ref="docxDiv" v-else-if="fileType ==='doc' || fileType ==='docx'" class="h-[100%]">
+    <div v-else-if="fileType ==='doc' || fileType ==='docx'" class="h-[100%]">
       docx
-    </div>
-    <div v-else-if="fileType ==='ppt' || fileType ==='pptx'" class="h-[100%]">
-      pptx
     </div>
     <div v-else-if="fileType ==='xls' || fileType ==='xlsx'" class="h-[100%]">
       xlsx

@@ -76,6 +76,18 @@ function download(item) {
     message.success('success!');
 }
 
+
+function handleAllClick(item){
+    message.success('all!');
+    router.push({name:'course_Details'})
+}
+
+function handleSingleClick(item){
+    message.success('single!');
+    router.push({name:'course_Details'})
+
+}
+
 </script>
 
 <template>
@@ -157,12 +169,12 @@ function download(item) {
                             <!-- <a-typography-title level="6" class="section-title"></a-typography-title> -->
 
                             <!-- 子项列表 -->
-                            <a-row style="background-color: #fafafa;margin:20px 0;" v-for="item in section.children"
+                            <a-row @click="handleAllClick(item)"  style="background-color: #fafafa;margin:20px 0;cursor:pointer;" v-for="item in section.children"
                                 :key="item.key" class="section-item">
                                 <!-- 左侧标题 -->
-                                <a-col :span="17" :offset="1">
+                                <a-col  :span="17" :offset="1">
                                     <template v-if="item.children.length === 1">
-                                        <a-button type="text" v-for="(content, contentIndex) in item.children"
+                                        <a-button  type="text" @click.stop="handleSingleClick(content)" v-for="(content, contentIndex) in item.children"
                                             :key="contentIndex" style="margin-left: 0;padding-left:0px;"
                                             class="content-button">
                                             {{ content }}
@@ -174,7 +186,7 @@ function download(item) {
                                     <template v-else>
                                         <span>{{ item.name }}</span>
 
-                                        <a-button v-for="(content, contentIndex) in item.children" :key="contentIndex"
+                                        <a-button @click.stop="handleSingleClick(content)" v-for="(content, contentIndex) in item.children" :key="contentIndex"
                                             class="content-button">
                                             {{ content }}
                                             <template #icon>
@@ -187,7 +199,7 @@ function download(item) {
 
                                 <!-- 右侧下载 -->
                                 <a-col :span="6" class="download-button">
-                                    <a-button type="link" @click="download(item)">下载</a-button>
+                                    <a-button type="link" @click.stop="download(item)">下载</a-button>
                                 </a-col>
                             </a-row>
                         </a-col>

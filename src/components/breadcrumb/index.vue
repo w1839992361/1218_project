@@ -18,7 +18,12 @@ export default {
         nav: {
             type: Array,
             required: false,
-            default: []
+            default: [
+              // {
+              //   title:'首页2',
+              //   path:'/'
+              // }
+            ]
         }
     },
     data() {

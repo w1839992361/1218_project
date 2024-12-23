@@ -25,8 +25,8 @@ const router = createRouter({
         },
         {
           path: 'course/detail',
-          name: 'courseDetails',
-          meta: { title: '基础课程', pid: 'course' },
+          name: 'course_Details',
+          meta: { title: '课程详情', pid: 'course' },
           component: () => import('../views/course/detail.vue'),
         },
         {
