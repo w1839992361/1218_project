@@ -7,12 +7,13 @@ const router = createRouter({
     {
       path: '/',
       component: Layout,
-      redirect:'/home',
+      name: 'Home',
+      redirect: '/home',
       meta: { title: '首页' },
       children: [
         {
           path: 'home',
-          name:'home',
+          name: 'home',
           meta: { title: '首页' },
           component: () => import('../views/home/index.vue'),
         },
@@ -23,17 +24,23 @@ const router = createRouter({
           component: () => import('../views/course/index.vue'),
         },
         {
+          path: 'course/detail',
+          name: 'courseDetails',
+          meta: { title: '基础课程', pid: 'course' },
+          component: () => import('../views/course/detail.vue'),
+        },
+        {
           path: 'subject',
           name: 'subject',
           meta: { title: '专题教育' },
           component: () => import('../views/subject/index.vue'),
         },
-        {
-          path: 'practice',
-          name: 'practice',
-          meta: { title: '课后服务' },
-          component: () => import('../views/practice/index.vue'),
-        },
+        // {
+        //   path: 'practice',
+        //   name: 'practice',
+        //   meta: { title: '课后服务' },
+        //   component: () => import('../views/practice/index.vue'),
+        // },
       ],
     },
     {
