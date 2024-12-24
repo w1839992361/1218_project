@@ -43,13 +43,154 @@ const rateValue = ref(2.5);
     </a-col>
   </a-row>
 
-  <a-row :gutter="16" class="mt-5">
+
+  <a-row :gutter="16" class="mt-10">
     <a-col :span="16">
-      <Preview />
+      <div class="warp">
+        <Preview />
+      </div>
+
+      <a-typography class="pt-5">
+        <a-typography-title>Introduction</a-typography-title>
+        <a-typography-paragraph>
+          In the process of internal desktop applications development, many different design specs and
+          implementations would be involved, which might cause designers and developers difficulties and
+          duplication and reduce the efficiency of development.
+        </a-typography-paragraph>
+      </a-typography>
     </a-col>
-    <a-col :span="8" style="background:blue;"></a-col>
+    <a-col :span="8">
+      <a-card title="授课老师">
+        <a-row :gutter="16">
+          <a-col>
+            <a-image :width="100" :src="`https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png`">
+            </a-image>
+          </a-col>
+          <a-col>
+            <div>
+              <h3>XXXXX</h3>
+              <p>1111</p>
+            </div>
+          </a-col>
+        </a-row>
+      </a-card>
+
+
+      <a-card title="学习清单" class="mt-5 border-none">
+        <template #extra>
+          <a-button type="text">打包下载</a-button>
+        </template>
+        <a-row :gutter="16">
+          <a-col :span="24">
+            <div class="list-container">
+              <!-- 理论课程 -->
+              <div class="list-item active">
+                <div class="item-left">
+                  <div class="circle-icon blue">
+                    <BookOpenIcon class="icon" />
+                  </div>
+                  <span class="item-text">理论课程</span>
+                </div>
+                <DownloadOutlined class="download-icon" />
+              </div>
+
+            </div>
+          </a-col>
+        </a-row>
+      </a-card>
+
+    </a-col>
   </a-row>
+
 </template>
 
 
-<style scoped></style>
+<style scoped>
+.warp {
+  background: #FFF;
+  padding: 10px;
+}
+
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f5f5f5;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.list-item:hover {
+  background-color: #cfe5fc;
+  color: #2b8cfd;
+}
+
+.list-item.active {
+  background-color: #cfe5fc;
+  color: #2b8cfd;
+}
+
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.circle-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-icon.blue {
+  background-color: #e6f4ff;
+}
+
+.circle-icon.purple {
+  background-color: #f4e6ff;
+}
+
+.circle-icon.green {
+  background-color: #e6ffe6;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.circle-icon.blue .icon {
+  color: #1890ff;
+}
+
+.circle-icon.purple .icon {
+  color: #722ed1;
+}
+
+.circle-icon.green .icon {
+  color: #52c41a;
+}
+
+.item-text {
+  font-size: 14px;
+}
+
+.download-icon {
+  width: 18px;
+  height: 18px;
+  color: #8c8c8c;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  color: #2b8cfd;
+}
+</style>
