@@ -85,7 +85,6 @@ function handleAllClick(item){
 function handleSingleClick(item){
     message.success('single!');
     router.push({name:'course_Details'})
-
 }
 
 </script>
