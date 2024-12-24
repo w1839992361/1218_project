@@ -1,23 +1,23 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { UserOutlined } from '@ant-design/icons-vue';
-import { useRouter, useRoute } from 'vue-router';
-import { onMounted } from 'vue';
+import { ref, watch } from "vue";
+import { UserOutlined } from "@ant-design/icons-vue";
+import { useRouter, useRoute } from "vue-router";
+import { onMounted } from "vue";
 
-const current = ref(['home']);
+const current = ref(["home"]);
 
 const navs = ref([
   {
-    key: 'home',
-    name: '首页'
+    key: "home",
+    name: "首页",
   },
   {
-    key: 'course',
-    name: '课程教学'
+    key: "course",
+    name: "课程教学",
   },
   {
-    key: 'subject',
-    name: '专题教育'
+    key: "subject",
+    name: "专题教育",
   },
   // {
   //     key: 'practice',
@@ -25,24 +25,29 @@ const navs = ref([
   // },
 ]);
 
+const keyword = ref('');
+
 const router = useRouter();
 const route = useRoute();
 
 // Watch route name and update the current selected key if necessary
-watch(() => route.name, (newName) => {
-  const matchedNav = navs.value.find(nav => nav.key === newName);
+watch(
+  () => route.name,
+  (newName) => {
+    const matchedNav = navs.value.find((nav) => nav.key === newName);
 
-  if (matchedNav) {
-    current.value = [matchedNav.key];
+    if (matchedNav) {
+      current.value = [matchedNav.key];
+    }
   }
-});
+);
 
 // Check the route's meta pid on mounted, if it's part of the navs, update the current value
 onMounted(() => {
   const routeMetaPid = route.meta?.pid; // Check if pid exists in route meta
 
   if (routeMetaPid) {
-    const matchedNav = navs.value.find(nav => nav.key === routeMetaPid);
+    const matchedNav = navs.value.find((nav) => nav.key === routeMetaPid);
     if (matchedNav) {
       current.value = [matchedNav.key]; // Update the current value if matched
     }
@@ -54,10 +59,14 @@ onMounted(() => {
 function selectedKeys({ key }) {
   router.push({ name: key });
 }
+
+function handleSearch(){
+  console.log(keyword.value)
+}
 </script>
 
 <template>
-  <div class="header">
+  <!-- <div class="header">
     <svg t="1734618016348" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
       p-id="4378" width="50" height="50">
       <path d="M512 512m-445 0a445 445 0 1 0 890 0 445 445 0 1 0-890 0Z" fill="#E6F3FF" p-id="4379"></path>
@@ -73,10 +82,10 @@ function selectedKeys({ key }) {
         fill="#148AF4" p-id="4383"></path>
     </svg>
     <h1>XX智慧教育平台</h1>
-  </div>
+  </div> -->
   <div class="warp">
     <div class="top">
-      <div class="center">
+      <!-- <div class="center">
         <svg t="1734618125872" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
           p-id="12475" width="80" height="80">
           <path
@@ -87,10 +96,15 @@ function selectedKeys({ key }) {
             fill="#008CFF" p-id="12477"></path>
         </svg>
         <h1>XX智慧教育平台</h1>
-      </div>
+      </div> -->
 
       <div class="login">
-        <a-button @click="$router.push('login')" shape="round" type="primary" :ghost="true">
+        <a-button
+          @click="$router.push({ name: 'login' })"
+          shape="round"
+          type="primary"
+          :ghost="true"
+        >
           <template #icon>
             <UserOutlined />
           </template>
@@ -98,16 +112,35 @@ function selectedKeys({ key }) {
         </a-button>
       </div>
 
-      <div class="nav">
-        <div class="nav_left">
-          <a-menu @click="selectedKeys" style="width:100%;" v-model:selectedKeys="current" mode="horizontal">
+      <a-row :gutter="16" class="w-[100%]">
+        <a-col :span="18">
+          <a-menu
+            @click="selectedKeys"
+            class="w-[100%]"
+            v-model:selectedKeys="current"
+            mode="horizontal"
+          >
             <a-menu-item :key="item.key" v-for="item in navs">
               <h3>{{ item.name }}</h3>
             </a-menu-item>
           </a-menu>
+        </a-col>
+
+        <a-col :span="5">
+          <a-input-search
+            v-model:value="keyword"
+            placeholder="请输入关键字"
+            enter-button
+            @search="handleSearch"
+          />
+        </a-col>
+      </a-row>
+      <!-- <div class="nav">
+    
+        <div class="nav_right">
+        
         </div>
-        <div class="nav_right"></div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -124,19 +157,19 @@ function selectedKeys({ key }) {
 }
 
 .header h1 {
-  color: #FFF;
+  color: #fff;
   font-weight: bold;
 }
 
-.warp{
+.warp {
   width: 100%;
-  background: #FFF;
+  background: #fff;
 }
 
 .top {
   width: 100%;
   height: 190px;
-  background-color: #FFF;
+  background-color: #fff;
   position: relative;
   display: flex;
   align-items: end;

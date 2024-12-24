@@ -37,7 +37,7 @@ const files = [
 const props = defineProps({
   fileUrl: {
     type: String,
-    default: 'http://150.109.233.199/assets/1.html'
+    default: 'http://150.109.233.199/assets/1.mp4'
   },
 });
 
