@@ -1,129 +1,108 @@
 <script setup>
-import { onMounted, ref } from 'vue';
-import { renderAsync } from "docx-preview";
-let docx = import.meta.glob("docx-preview"); // vite不支持require 
-import JSZip from 'jszip';
+import { onMounted, ref, nextTick } from 'vue';
+import { getFile } from '@/api/preview';
 
+// pdf
+import VueOfficePdf from '@vue-office/pdf'
+
+// excel 
+import VueOfficeExcel from '@vue-office/excel'
+import '@vue-office/excel/lib/index.css'
+
+// docx
+import VueOfficeDocx from '@vue-office/docx'
+import '@vue-office/docx/lib/index.css'
+
+
+// pptx
+import VueOfficePptx from '@vue-office/pptx'
 
 const files = [
   'http://150.109.233.199/assets/1.doc',
-  'http://150.109.233.199/assets/1.docx',
   'http://150.109.233.199/assets/1.ppt',
-  'http://150.109.233.199/assets/1.pptx',
-  'http://150.109.233.199/assets/1.xlsx',
-  'http://150.109.233.199/assets/1.xls',
-  'http://150.109.233.199/assets/1.mp4',
-  'http://150.109.233.199/assets/1.html',
-  'http://150.109.233.199/assets/1.txt',
+
+
+
+
+  // 'http://150.109.233.199/assets/1.docx',
+  // 'http://150.109.233.199/assets/1.pptx',
+  // 'http://150.109.233.199/assets/1.xlsx',
+  // 'http://150.109.233.199/assets/1.xls',
+  // 'http://150.109.233.199/assets/1.mp4',
+  // 'http://150.109.233.199/assets/1.html',
+  // 'http://150.109.233.199/assets/1.txt',
+  // 'http://150.109.233.199/assets/1.pdf',
 ];
 
 const props = defineProps({
   fileUrl: {
     type: String,
-    required: true,
-    default: 'http://150.109.233.199/assets/1.pptx'
+    default: 'http://150.109.233.199/assets/1.html'
   },
 });
 
 const fileType = ref('');
 const previewContent = ref('');
-
-
+const loading = ref(true);
 const loadFilePreview = async () => {
-  const docxDiv = ref();
+
   const fileExtension = props.fileUrl.split('.').pop().toLowerCase();
   fileType.value = fileExtension;
   if (fileExtension === 'pdf') {
-    await renderPdf(props.fileUrl);
   } else if (['ppt', 'pptx'].includes(fileExtension)) {
-    await renderPptx(props.fileUrl);
   } else if (['doc', 'docx'].includes(fileExtension)) {
-    await renderDocx(props.fileUrl, docxDiv);
   } else if (['xls', 'xlsx'].includes(fileExtension)) {
-    await renderExcel(props.fileUrl);
   } else if (['txt'].includes(fileExtension)) {
     await renderTxt(props.fileUrl);
   } else if (['html'].includes(fileExtension)) {
-    previewContent.value = props.fileUrl;
   } else if (['mp4'].includes(fileExtension)) {
-    previewContent.value = props.fileUrl;
   } else {
     previewContent.value = '不支持的文件类型';
   }
 };
 
-// 渲染 PDF 文件
-const renderPdf = async (url) => {
 
-};
-
-// 渲染 PPT/PPTX 文件
-const renderPptx = async (url, dom) => {
-
-};
-
-const renderDocx = async (url, dom) => {
-  // 渲染文件内容
-  renderAsync(url, dom, null, {
-    inWrapper: true,
-    ignoreWidth: false,
-    ignoreHeight: false,
-    ignoreFonts: false,
-    breakPages: true,
-    ignoreLastRenderedPageBreak: true,
-    experimental: false,
-    trimXmlDeclaration: true,
-    debug: false,
-  });
-
-};
-
-
-
-
-// 渲染 Excel 文件
-const renderExcel = async (url) => {
-
-};
 
 // 渲染 TXT 文件
 const renderTxt = async (url) => {
   const response = await fetch(url);
   previewContent.value = await response.text();
+  loading.value = false;
 };
+
+function renderedHandler() {
+  console.log()
+  loading.value = false;
+}
 
 onMounted(loadFilePreview);
 </script>
 
 <template>
   <div class="preview">
-    <!-- <h3>文件预览：{{ props.fileUrl }}</h3> -->
-    <div v-if="fileType === 'html'">
-      html
-      <!-- <iframe :src="props.fileUrl" width="100%" class="h-[100%]" /> -->
-    </div>
+    <a-spin class="laoding" v-if="loading" />
+    <iframe @load="renderedHandler" v-if="fileType === 'html'" :src="props.fileUrl" class="w-[100%] h-[500px]" />
 
-    <div v-else-if="fileType ==='pdf'" class="h-[100%]">
-      pdf
-      <div ref="pptPreview"></div>
-    </div>
-    <div ref="docxDiv" v-else-if="fileType ==='doc' || fileType ==='docx'" class="h-[100%]">
-      docx
-    </div>
-    <div v-else-if="fileType ==='ppt' || fileType ==='pptx'" class="h-[100%]">
-      pptx
-    </div>
-    <div v-else-if="fileType ==='xls' || fileType ==='xlsx'" class="h-[100%]">
-      xlsx
-    </div>
-    <div v-else-if="fileType ==='mp4'" class="h-[100%]">
-      <video controls width="100%" class="h-[100%]">
-        <source :src="previewContent" />
+    <vue-office-pdf @rendered="renderedHandler" v-else-if="fileType === 'pdf'" :src="props.fileUrl"
+      class="h-[100%] w-[100%]" />
+
+    <vue-office-docx @rendered="renderedHandler" v-else-if="fileType === 'docx'" :src="props.fileUrl"
+      class="h-[100%] w-[100%]" />
+
+    <vue-office-pptx @rendered="renderedHandler" v-else-if="fileType === 'pptx'" :src="props.fileUrl"
+      class="h-[100%] w-[100%]" />
+
+
+    <vue-office-excel @rendered="renderedHandler" :options="{ xls: fileType === 'xls' }"
+      v-else-if="fileType === 'xlsx' || fileType === 'xls'" :src="props.fileUrl" class="h-[100%] w-[100%]" />
+
+    <div v-else-if="fileType === 'mp4'" class="h0-[100%]">
+      <video @canplay="renderedHandler" controls width="100%" class="h-[100%]">
+        <source :src="props.fileUrl" />
         您的浏览器不支持视频播放。
       </video>
     </div>
     <div v-else>
-      other
       <pre>{{ previewContent }}</pre>
     </div>
   </div>
@@ -134,19 +113,39 @@ onMounted(loadFilePreview);
   width: 100%;
   height: 500px;
   overflow-x: auto;
+  position: relative;
 }
 
 h3 {
   margin-bottom: 10px;
 }
+
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
   background-color: #f4f4f4;
   padding: 10px;
   border-radius: 5px;
+  font-weight: bold;
 }
+
 iframe {
   border: none;
+}
+
+:deep(.toolbar) {
+  display: none;
+  height: 0 !important;
+}
+
+:deep(.pdf-app) #viewerContainer {
+  top: 0 !important;
+}
+
+.laoding {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

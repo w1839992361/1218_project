@@ -9,16 +9,12 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
-    WindiCSS(),
+    WindiCSS()
   ],
-  server: {
-    proxy: {
-      '/pdf': 'http://localhost:5173/js' // 根据实际需要设置代理
-    }
-  },
+
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
-  },
+  }
 })

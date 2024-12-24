@@ -15,14 +15,13 @@ axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 // 创建axios实例
 const service = axios.create({
     // axios中请求配置有baseURL选项，表示请求URL公共部分
-    baseURL: 'http://localhost:111/aaa',
+    baseURL: 'http://150.109.233.199/assets/',
     // 超时
     timeout: 10000
 })
 
 // request拦截器
 service.interceptors.request.use(config => {
-    console.log(message)
     // 是否需要设置 token
     const isToken = (config.headers || {}).isToken === false
     // 是否需要防止数据重复提交
@@ -74,6 +73,7 @@ service.interceptors.request.use(config => {
 
 // 响应拦截器
 service.interceptors.response.use(res => {
+    console.log(res.request.responseType)
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200;
     // 获取错误信息

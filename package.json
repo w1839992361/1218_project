@@ -9,14 +9,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vue-office/docx": "^1.6.3",
+    "@vue-office/excel": "^1.7.12",
+    "@vue-office/pdf": "^2.0.10",
+    "@vue-office/pptx": "^0.0.6",
     "ant-design-vue": "^4.0.0-rc.6",
     "axios": "^1.7.9",
-    "docx-preview": "^0.3.3",
     "file-saver": "^2.0.5",
     "js-cookie": "^3.0.5",
     "jszip": "^3.10.1",
     "pinia": "^2.2.6",
     "vue": "^3.5.13",
+    "vue-demi": "^0.14.6",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {

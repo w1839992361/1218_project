@@ -188,10 +188,9 @@ function handlePracticeClick(item) {
 
     <a-row :gutter="16">
         <a-col :span="6" v-for="item in data.practice" style="margin-top: 10px;">
-            <a-card @click="handlePracticeClick(item)" hoverable style="width: 100%">
+            <a-card @click="handlePracticeClick(item)" hoverable style="max-height: 220px;">
                 <template #cover>
-                    <img alt="example" style="object-fit: cover;" height="220px"
-                        src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />
+                    <img alt="" class="img" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />
                 </template>
                 <a-card-meta title="Europe Street beat">
                 </a-card-meta>
@@ -265,5 +264,12 @@ function handlePracticeClick(item) {
 
 .card .preview {
     width: 127px;
+}
+
+.img {
+    height: 158px;
+    cursor: pointer;
+    object-position: top;
+    object-fit: cover;
 }
 </style>
