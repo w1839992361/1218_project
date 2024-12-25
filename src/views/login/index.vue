@@ -1,7 +1,12 @@
 <script setup>
 import { ref, reactive, toRaw } from 'vue';
 import { login, reg } from '@/api/login';
-
+import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue';
+import { message } from 'ant-design-vue';
+import { setToken } from '@/utils/index';
+import { useRouter } from 'vue-router';
+const router = useRouter();
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const loginFormRef = ref(null);
 const loginForm = reactive({
@@ -44,6 +49,7 @@ const regFormRules = {
 };
 const fileList = ref([]);
 const loading = ref(false);
+const previewImg = ref('');
 
 // 控制当前显示的表单类型
 const isLogin = ref(true);
@@ -58,8 +64,14 @@ const toggleForm = () => {
 const submit = () => {
     loginFormRef.value
         .validate()
-        .then(() => {
-            // login({ email: email.value, password: password.value })
+        .then(async () => {
+            const { code, data } = await login(toRaw(loginForm));
+            if (code === 200) {
+                setToken(data);
+                message.success('登录成功!');
+                resetForm();
+                router.push('/');
+            }
         })
 };
 
@@ -72,17 +84,24 @@ function resetForm() {
 const register = () => {
     regFormRef.value
         .validate()
-        .then(() => {
-            // 这里可以实现注册请求，比如调用 API。
-            console.log('注册成功', { email: email.value, password: password.value });
+        .then(async () => {
+            const { code } = await reg(toRaw(regForm));
+            if (code === 200) {
+                message.success('注册成功!');
+                loginForm.username = regForm.username;
+                loginForm.password = regForm.password;
+                submit();
+            }
         })
-        .catch((errorInfo) => {
-            console.log('注册失败', errorInfo);
-        });
+
 };
 
-function handleChange(e){
-    console.log(e)
+function handleChange(e) {
+    if (e.file.status === "done") {
+        let file = e.file.response.message;
+        regForm.avatar = file;
+        previewImg.value = baseUrl + '/api/avatar/stream/' + file;
+    }
 }
 
 </script>
@@ -98,7 +117,7 @@ function handleChange(e){
                         <a-input v-model:value="loginForm.username" />
                     </a-form-item>
                     <a-form-item label="密码" name="password">
-                        <a-input v-model:value="loginForm.password" />
+                        <a-input-password v-model:value="loginForm.password" />
                     </a-form-item>
                 </a-form>
                 <div class="w-[100%] flex justify-end items-center">
@@ -114,14 +133,13 @@ function handleChange(e){
                         <a-input v-model:value="regForm.username" />
                     </a-form-item>
                     <a-form-item label="密码" name="password">
-                        <a-input v-model:value="regForm.password" />
+                        <a-input-password v-model:value="regForm.password" />
                     </a-form-item>
                     <a-form-item label="头像" name="avatar">
                         <a-upload v-model:file-list="fileList" name="avatarFile" list-type="picture-card"
-                            class="avatar-uploader" :show-upload-list="false"
-                            action="/dev/api/avatar/upload" :before-upload="beforeUpload"
+                            class="avatar-uploader" :show-upload-list="false" :action="`${baseUrl}/api/avatar/upload`"
                             @change="handleChange">
-                            <img v-if="regForm.avatar" :src="regForm.avatar" alt="avatar" />
+                            <img v-if="regForm.avatar" :src="previewImg" alt="avatar" />
                             <div v-else>
                                 <loading-outlined v-if="loading"></loading-outlined>
                                 <plus-outlined v-else></plus-outlined>

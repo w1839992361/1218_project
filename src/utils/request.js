@@ -15,10 +15,12 @@ axios.defaults.headers['Content-Type'] = 'application/json;charset=utf-8'
 // 创建axios实例
 const service = axios.create({
     // axios中请求配置有baseURL选项，表示请求URL公共部分
-    baseURL: '/dev',
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     // 超时
     timeout: 10000
 })
+
+
 
 // request拦截器
 service.interceptors.request.use(config => {
@@ -112,7 +114,7 @@ service.interceptors.response.use(res => {
     }
 },
     error => {
-        let  msg  = error.message;
+        let msg = error.message;
         if (msg == "Network Error") {
             msg = "后端接口连接异常";
         } else if (msg.includes("timeout")) {

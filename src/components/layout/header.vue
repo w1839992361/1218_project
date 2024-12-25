@@ -4,6 +4,7 @@ import { UserOutlined } from "@ant-design/icons-vue";
 import { useRouter, useRoute } from "vue-router";
 import { onMounted } from "vue";
 import { getAllTree } from '@/api/admin/content';
+import { getInfo } from '@/api/login';
 const current = ref(["home"]);
 
 const navs = ref([
@@ -12,6 +13,14 @@ const navs = ref([
     name: "首页",
   },
 ]);
+
+const info = ref();
+const isLogin = ref(false);
+
+getInfo().then(res => {
+  isLogin.value = res.code === 200;
+  info.value = res.data;
+})
 
 async function getHeader() {
   const { data } = await getAllTree();
@@ -69,6 +78,8 @@ function selectedKeys({ key }) {
 function handleSearch() {
   console.log(keyword.value)
 }
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const imgUrl = baseUrl + '/api/avatar/stream/';
 </script>
 
 <template>
@@ -105,12 +116,16 @@ function handleSearch() {
       </div> -->
 
       <div class="login">
-        <a-button @click="$router.push({ name: 'login' })" shape="round" type="primary" :ghost="true">
+        <a-button v-if="!isLogin" @click="$router.push({ name: 'login' })" shape="round" type="primary" :ghost="true">
           <template #icon>
             <UserOutlined />
           </template>
           登录
         </a-button>
+        <template v-else>
+          <a-avatar :src="imgUrl + info.avatar" />
+          <span class="ml-2">{{ info.username }}</span>
+        </template>
       </div>
 
       <a-row :gutter="16" class="w-[100%]">

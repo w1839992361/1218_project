@@ -34,11 +34,13 @@ const files = [
   // 'http://150.109.233.199/assets/1.pdf',
 ];
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
 const props = defineProps({
   fileUrl: {
     type: String,
-    // default: '/dev/api/videos/stream/427f9fd6-61b5-46a7-81b4-8698ba3a7633' // video
-    default: '/dev/api/docs/stream/ppt/497cc880-e1a5-45d5-80ba-d6ecc67ca448' // video
+    // default: baseUrl + '/api/videos/stream/427f9fd6-61b5-46a7-81b4-8698ba3a7633' // video
+    default: baseUrl + '/api/docs/stream/ppt/497cc880-e1a5-45d5-80ba-d6ecc67ca448' // video
   },
   fileType: {
     type: String,

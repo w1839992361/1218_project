@@ -4,7 +4,6 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import WindiCSS from 'vite-plugin-windicss'
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -15,10 +14,10 @@ export default defineConfig({
 
   server: {
     proxy: {
-      '^/dev': {
-        target: 'http://localhost:8080/',
+      [`^${import.meta.env.VITE_API_BASE_URL}`]: {
+        target: import.meta.env.VITE_API_BASE_URL, // 使用环境变量中的 API 基础 URL
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/dev/, ''),
+        rewrite: (path) => path.replace(new RegExp(`^${import.meta.env.VITE_API_BASE_URL}`), ''),
       },
     },
   },
