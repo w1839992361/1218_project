@@ -23,7 +23,8 @@ getInfo().then(res => {
 })
 
 async function getHeader() {
-  const { data } = await getAllTree();
+  const { data ,code} = await getAllTree();
+  if(code !== 200) return;
   let keys = {
     '课程教学': 'course',
   };
