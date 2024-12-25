@@ -13,6 +13,15 @@ export default defineConfig({
     WindiCSS()
   ],
 
+  server: {
+    proxy: {
+      '^/dev': {
+        target: 'http://localhost:8080/',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/dev/, ''),
+      },
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))

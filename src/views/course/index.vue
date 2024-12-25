@@ -3,28 +3,37 @@ import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { PlayCircleOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
+import { getTagsByParentId } from '@/api/other';
 const router = useRouter();
 const route = useRoute();
 
 const selectedKeys = ref(['course']);
 
 const courseTitle = ref([
-    {
-        name: '学科课程',
-        key: 'course',
-        src: new URL('@/assets/images/course/hat.png', import.meta.url).href
-    },
-    {
-        name: '拓展课程',
-        key: 'extensions',
-        src: new URL('@/assets/images/course/dashboard.png', import.meta.url).href
-    }
+    // {
+    //     name: '学科课程',
+    //     key: 'course',
+    //     src: new URL('@/assets/images/course/hat.png', import.meta.url).href
+    // },
+    // {
+    //     name: '拓展课程',
+    //     key: 'extensions',
+    //     src: new URL('@/assets/images/course/dashboard.png', import.meta.url).href
+    // }
 ]);
 
 const currentKeys = ref(1);
 const expandIconPosition = ref('right');
-onMounted(() => {
-    selectedKeys.value = route.query.type ? [route.query.type] : ['course'];
+onMounted(async () => {
+    const { data } = await getTagsByParentId(route.query.course);
+    courseTitle.value = data.map(item => {
+        return {
+            key: item.name,
+            ...item
+        }
+    });
+    selectedKeys.value = [courseTitle.value[0].name];
+
 })
 
 
@@ -77,21 +86,20 @@ function download(item) {
 }
 
 
-function handleAllClick(item){
+function handleAllClick(item) {
     message.success('all!');
-    router.push({name:'course_Details'})
+    router.push({ name: 'course_Details' })
 }
 
-function handleSingleClick(item){
+function handleSingleClick(item) {
     message.success('single!');
-    router.push({name:'course_Details'})
+    router.push({ name: 'course_Details' })
 }
 
 </script>
 
 <template>
-    <a-menu :inlineCollapsed="false" style="width:100%;" v-model:selectedKeys="selectedKeys"
-        mode="horizontal">
+    <a-menu :inlineCollapsed="false" style="width:100%;" v-model:selectedKeys="selectedKeys" mode="horizontal">
         <a-menu-item :key="item.key" v-for="item in courseTitle">
             <template #icon>
                 <img :src="item.src" width="50px" alt="">
@@ -141,7 +149,7 @@ function handleSingleClick(item){
         </div>
     </a-card>
 
-    <template v-if="selectedKeys[0] === 'course'">
+    <template v-if="selectedKeys[0] === '学科课程'">
         <a-card title="目录" class="pages">
             <a-collapse v-model:activeKey="currentKeys" :bordered="false" accordion expand-icon-position="end">
                 <a-collapse-panel v-for="collapse in sections" :key="collapse.key" :header="collapse.name">
@@ -168,14 +176,15 @@ function handleSingleClick(item){
                             <!-- <a-typography-title level="6" class="section-title"></a-typography-title> -->
 
                             <!-- 子项列表 -->
-                            <a-row @click="handleAllClick(item)"  style="background-color: #fafafa;margin:20px 0;cursor:pointer;" v-for="item in section.children"
-                                :key="item.key" class="section-item">
+                            <a-row @click="handleAllClick(item)"
+                                style="background-color: #fafafa;margin:20px 0;cursor:pointer;"
+                                v-for="item in section.children" :key="item.key" class="section-item">
                                 <!-- 左侧标题 -->
-                                <a-col  :span="17" :offset="1">
+                                <a-col :span="17" :offset="1">
                                     <template v-if="item.children.length === 1">
-                                        <a-button  type="text" @click.stop="handleSingleClick(content)" v-for="(content, contentIndex) in item.children"
-                                            :key="contentIndex" style="margin-left: 0;padding-left:0px;"
-                                            class="content-button">
+                                        <a-button type="text" @click.stop="handleSingleClick(content)"
+                                            v-for="(content, contentIndex) in item.children" :key="contentIndex"
+                                            style="margin-left: 0;padding-left:0px;" class="content-button">
                                             {{ content }}
                                             <template #icon>
                                                 <PlayCircleOutlined class="play" />
@@ -185,7 +194,8 @@ function handleSingleClick(item){
                                     <template v-else>
                                         <span>{{ item.name }}</span>
 
-                                        <a-button @click.stop="handleSingleClick(content)" v-for="(content, contentIndex) in item.children" :key="contentIndex"
+                                        <a-button @click.stop="handleSingleClick(content)"
+                                            v-for="(content, contentIndex) in item.children" :key="contentIndex"
                                             class="content-button">
                                             {{ content }}
                                             <template #icon>
@@ -226,7 +236,7 @@ function handleSingleClick(item){
                 <a-col :span="6" v-for="item in 10">
                     <a-card class="page" hoverable>
                         <template #cover>
-                            <img alt="example" style="height: 200px;"
+                            <img alt="example" class="max-h-[150px] "
                                 src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />
                         </template>
                         <a-card-meta title="Europe Street beat">

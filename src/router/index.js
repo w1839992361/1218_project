@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Layout from '../components/layout/index.vue'
+import Layout from '../components/layout/index.vue';
+import AdminLayout from '../components/layout/admin/index.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,12 +36,6 @@ const router = createRouter({
           meta: { title: '专题教育' },
           component: () => import('../views/subject/index.vue'),
         },
-        // {
-        //   path: 'practice',
-        //   name: 'practice',
-        //   meta: { title: '课后服务' },
-        //   component: () => import('../views/practice/index.vue'),
-        // },
       ],
     },
     {
@@ -49,6 +44,34 @@ const router = createRouter({
       meta: { title: '登录' },
       component: () => import('../views/login/index.vue'),
     },
+
+    {
+      path: '/manage',
+      name: 'manage',
+      redirect: '/manage/contents',
+      component: AdminLayout,
+      meta: { title: '后台' },
+      children: [
+        {
+          path: 'contents',
+          name: 'Contents',
+          meta: { title: '内容管理' },
+          component: () => import('../views/manage/content/index.vue'),
+        },
+        {
+          path: 'users',
+          name: 'Users',
+          meta: { title: '用户管理' },
+          component: () => import('../views/manage/user/index.vue'),
+        },
+        {
+          path: 'dataUpdate',
+          name: 'DataUpdate',
+          meta: { title: '数据同步' },
+          component: () => import('../views/manage/data/index.vue'),
+        },
+      ]
+    }
   ],
 })
 

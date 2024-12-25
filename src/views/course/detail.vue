@@ -27,10 +27,10 @@ function handleDownClick(item) {
 
 <template>
   <a-row :gutter="16">
-    <a-col :span="10">
-      <breadcrumb :navs="[]" />
-    </a-col>
-    <a-col :span="14">
+    <!-- <a-col :span="10"> -->
+      <!-- <breadcrumb :navs="[]" /> -->
+    <!-- </a-col> -->
+    <a-col :span="24" class="flex items-center justify-end">
       <a-rate v-model:value="rateValue" allow-half />
       <span style="margin-left: 10px">{{ rateValue }}分 (111)个</span>
       <a-button style="margin-left: 10px" shape="round" type="primary" size="small"
@@ -107,7 +107,7 @@ function handleDownClick(item) {
                   <div class="circle-icon">
                     <SvgIcon icon="video" />
                   </div>
-                  <span class="item-text">理论课程</span>
+                  <span class="item-text">视频课程</span>
                 </div>
                 <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
               </div>
@@ -122,7 +122,7 @@ function handleDownClick(item) {
                   <div class="circle-icon blue">
                     <SvgIcon icon="paper" width="20" height="20" />
                   </div>
-                  <span class="item-text">理论课程</span>
+                  <span class="item-text">学习任务单</span>
                 </div>
                 <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
               </div>
@@ -137,7 +137,22 @@ function handleDownClick(item) {
                   <div class="circle-icon blue">
                     <SvgIcon icon="book" width="20" height="20" />
                   </div>
-                  <span class="item-text">理论课程</span>
+                  <span class="item-text">课后练习</span>
+                </div>
+                <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
+              </div>
+            </div>
+          </a-col>
+
+          <a-col :span="24">
+            <div class="list-container">
+              <!-- 理论课程 -->
+              <div class="list-item" @click="handleResClick">
+                <div class="item-left">
+                  <div class="circle-icon blue">
+                    <SvgIcon icon="paper" width="20" height="20" />
+                  </div>
+                  <span class="item-text">教学设计</span>
                 </div>
                 <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
               </div>
@@ -152,22 +167,7 @@ function handleDownClick(item) {
                   <div class="circle-icon blue">
                     <SvgIcon icon="book" width="20" height="20" />
                   </div>
-                  <span class="item-text">理论课程</span>
-                </div>
-                <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
-              </div>
-            </div>
-          </a-col>
-
-          <a-col :span="24">
-            <div class="list-container">
-              <!-- 理论课程 -->
-              <div class="list-item" @click="handleResClick">
-                <div class="item-left">
-                  <div class="circle-icon blue">
-                    <SvgIcon icon="book" width="20" height="20" />
-                  </div>
-                  <span class="item-text">理论课程</span>
+                  <span class="item-text">教学课件</span>
                 </div>
                 <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
               </div>

@@ -1,34 +1,76 @@
 <script setup>
-import { ref } from 'vue';
-import { Form, Input, Button, message } from 'ant-design-vue';
-import { login } from '@/api/login'
-// 管理表单输入数据
-const email = ref('a@qq.com');
-const password = ref('123123');
-const confirmPassword = ref('');
+import { ref, reactive, toRaw } from 'vue';
+import { login, reg } from '@/api/login';
+
+
+const loginFormRef = ref(null);
+const loginForm = reactive({
+    username: '',
+    password: '',
+});
+const loginFormRules = {
+    username: [
+        { required: true, message: '请输入账号', trigger: 'change' },
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'change' },
+    ],
+};
+
+const regFormRef = ref(null);
+const regForm = reactive({
+    username: '',
+    password: '',
+    role: 'user',
+    avatar: '',
+    nikename: '',
+    email: '',
+    phone: '',
+    organization: ''
+});
+const regFormRules = {
+    username: [
+        { required: true, message: '请输入账号', trigger: 'change' },
+    ],
+    password: [
+        { required: true, message: '请输入密码', trigger: 'change' },
+    ],
+    avatar: [
+        { required: true, message: '请上传头像', trigger: 'change' },
+    ],
+    nikename: [
+        { required: true, message: '请输入名称', trigger: 'change' },
+    ],
+};
+const fileList = ref([]);
+const loading = ref(false);
 
 // 控制当前显示的表单类型
 const isLogin = ref(true);
 
 // 切换表单
 const toggleForm = () => {
-    email.value = '';
-    password.value = '';
     isLogin.value = !isLogin.value;
+    resetForm()
 };
 
 // 登录逻辑
 const submit = () => {
-    form.value
+    loginFormRef.value
         .validate()
         .then(() => {
-            login({ email: email.value, password: password.value })
+            // login({ email: email.value, password: password.value })
         })
 };
 
+function resetForm() {
+    loginFormRef.value.resetFields();
+    regFormRef.value.resetFields();
+}
+
 // 注册逻辑
 const register = () => {
-    form.value
+    regFormRef.value
         .validate()
         .then(() => {
             // 这里可以实现注册请求，比如调用 API。
@@ -39,72 +81,85 @@ const register = () => {
         });
 };
 
-// 创建一个 Form 实例
-const form = ref(null);
+function handleChange(e){
+    console.log(e)
+}
+
 </script>
 
 <template>
-    <div class="container">
+    <div class="warp">
         <img src="../../assets/images/login/bg2.png" class="bg2" alt="">
         <div class="auth-container">
-            <div v-if="isLogin" class="auth-form">
+            <div v-show="isLogin" class="auth-form">
                 <h2>登录</h2>
-                <Form ref="form" :model="{ email, password }" @submit.prevent="submit">
-                    <a-form-item label="邮箱" name="email" :rules="[
-                { required: true, message: '邮箱不能为空' },
-                { type: 'email', message: '请输入有效的邮箱地址' }
-            ]">
-                        <a-input v-model:value="email" type="email" placeholder="请输入邮箱" />
+                <a-form ref="loginFormRef" :model="loginForm" :rules="loginFormRules">
+                    <a-form-item label="账号" name="username">
+                        <a-input v-model:value="loginForm.username" />
                     </a-form-item>
-                    <a-form-item label="密码" name="password" :rules="[
-                { required: true, message: '密码不能为空' }
-            ]">
-                        <a-input-password v-model:value="password" placeholder="请输入密码" />
+                    <a-form-item label="密码" name="password">
+                        <a-input v-model:value="loginForm.password" />
                     </a-form-item>
-                    <a-form-item>
-                        <Button type="primary" block @click="submit">登录</Button>
-                    </a-form-item>
-                </Form>
-                <p class="switch-auth">
-                    还没有账号？<span @click="toggleForm">注册</span>
-                </p>
+                </a-form>
+                <div class="w-[100%] flex justify-end items-center">
+                    <a-button type="primary" @click="submit">登录</a-button>
+                    <a-button type="text" @click="toggleForm"> 去注册</a-button>
+                </div>
             </div>
 
-            <div v-if="!isLogin" class="auth-form">
+            <div v-show="!isLogin" class="auth-form">
                 <h2>注册</h2>
-                <Form ref="form" :model="{ email, password, confirmPassword }" @submit.prevent="register">
-                    <a-form-item label="邮箱" name="email" :rules="[
-                { required: true, message: '邮箱不能为空' },
-                { type: 'email', message: '请输入有效的邮箱地址' }
-            ]">
-                        <a-input v-model:value="email" type="email" placeholder="请输入邮箱" />
+                <a-form ref="regFormRef" :model="regForm" :rules="regFormRules">
+                    <a-form-item label="账号" name="username">
+                        <a-input v-model:value="regForm.username" />
                     </a-form-item>
-                    <a-form-item label="密码" name="password" :rules="[
-                { required: true, message: '密码不能为空' }
-            ]">
-                        <a-input-password v-model:value="password" placeholder="请输入密码" />
+                    <a-form-item label="密码" name="password">
+                        <a-input v-model:value="regForm.password" />
                     </a-form-item>
-                    <a-form-item>
-                        <Button type="primary" block @click="register">注册</Button>
+                    <a-form-item label="头像" name="avatar">
+                        <a-upload v-model:file-list="fileList" name="avatarFile" list-type="picture-card"
+                            class="avatar-uploader" :show-upload-list="false"
+                            action="/dev/api/avatar/upload" :before-upload="beforeUpload"
+                            @change="handleChange">
+                            <img v-if="regForm.avatar" :src="regForm.avatar" alt="avatar" />
+                            <div v-else>
+                                <loading-outlined v-if="loading"></loading-outlined>
+                                <plus-outlined v-else></plus-outlined>
+                                <div class="ant-upload-text">Upload</div>
+                            </div>
+                        </a-upload>
                     </a-form-item>
-                </Form>
-                <p class="switch-auth">
-                    已有账号？<span @click="toggleForm">登录</span>
-                </p>
+                    <a-form-item label="昵称" name="nikename">
+                        <a-input v-model:value="regForm.nikename" />
+                    </a-form-item>
+                    <a-form-item label="邮箱" name="email">
+                        <a-input v-model:value="regForm.email" />
+                    </a-form-item>
+                    <a-form-item label="手机" name="phone">
+                        <a-input v-model:value="regForm.phone" />
+                    </a-form-item>
+                    <a-form-item label="组织" name="organization">
+                        <a-input v-model:value="regForm.organization" />
+                    </a-form-item>
+                </a-form>
+                <div class="w-[100%] flex justify-end items-center">
+                    <a-button type="primary" @click="register">注册</a-button>
+                    <a-button type="text" @click="toggleForm">去登录</a-button>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.container {
+.warp {
     background: url('@/assets/images/login/bg.png');
     width: 100%;
     height: 100%;
     position: relative;
 }
 
-.bg2{
+.bg2 {
     width: 612px;
     height: 376px;
     position: absolute;

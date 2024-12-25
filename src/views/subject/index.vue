@@ -13,8 +13,7 @@ function handlePageBannerClick(item) {
 </script>
 
 <template>
-  <breadcrumb />
-
+  <!-- <breadcrumb /> -->
   <template v-for="item in 3">
     <a-row>
       <a-col :span="12">

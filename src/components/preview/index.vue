@@ -37,8 +37,14 @@ const files = [
 const props = defineProps({
   fileUrl: {
     type: String,
-    default: 'http://150.109.233.199/assets/1.mp4'
+    // default: '/dev/api/videos/stream/427f9fd6-61b5-46a7-81b4-8698ba3a7633' // video
+    default: '/dev/api/docs/stream/ppt/497cc880-e1a5-45d5-80ba-d6ecc67ca448' // video
   },
+  fileType: {
+    type: String,
+    required: true,
+    default: 'pptx'
+  }
 });
 
 const fileType = ref('');
@@ -46,8 +52,11 @@ const previewContent = ref('');
 const loading = ref(true);
 const loadFilePreview = async () => {
 
-  const fileExtension = props.fileUrl.split('.').pop().toLowerCase();
-  fileType.value = fileExtension;
+  // const fileExtension = props.fileUrl.split('.').pop().toLowerCase();
+  // fileType.value = fileExtension ;
+  fileType.value = props.fileType;
+  const fileExtension = props.fileType;
+  console.log(fileType.value)
   if (fileExtension === 'pdf') {
   } else if (['ppt', 'pptx'].includes(fileExtension)) {
   } else if (['doc', 'docx'].includes(fileExtension)) {
