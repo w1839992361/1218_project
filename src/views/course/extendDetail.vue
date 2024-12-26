@@ -30,30 +30,15 @@ function handleDownClick(item) {
         <!-- <a-col :span="10"> -->
         <!-- <breadcrumb :navs="[]" /> -->
         <!-- </a-col> -->
-        <a-col :span="24" class="flex items-center justify-end">
-            <a-rate v-model:value="rateValue" allow-half />
-            <span style="margin-left: 10px">{{ rateValue }}分 (111)个</span>
-            <a-button style="margin-left: 10px" shape="round" type="primary" size="small">去评价</a-button>
-
-            <a-button type="text" :icon="h(StarOutlined)" shape="round"> 收藏 </a-button>
-            <a-button type="text" shape="round">
-                <template #icon>
-                    <LikeOutlined />
-                </template>
-                点赞
-            </a-button>
-            <a-button type="text" shape="round">
-                <template #icon>
-                    <EyeOutlined />
-                </template>
-                (1w)已学
-            </a-button>
-            <a-button type="text" shape="round">
-                <template #icon>
-                    <ShareAltOutlined />
-                </template>
-                分享链接
-            </a-button>
+        <a-col :span="24">
+            <a-row :gutter="16">
+                <h1 class="text-2xl">文心实践</h1>
+            </a-row>
+            <a-row :gutter="16" class="mt-2">
+                <a-col :span="4" v-for="item in 6">
+                    课程负责人：wangcaibin
+                </a-col>
+            </a-row>
         </a-col>
     </a-row>
 
@@ -63,7 +48,7 @@ function handleDownClick(item) {
                 <Preview />
             </div>
 
-            <a-typography class="pt-5">
+            <a-typography class="p-5 bg-[#fff] mt-5 rounded-xl ">
                 <a-typography-title>Introduction</a-typography-title>
                 <a-typography-paragraph>
                     In the process of internal desktop applications development, many different
@@ -74,23 +59,7 @@ function handleDownClick(item) {
             </a-typography>
         </a-col>
         <a-col :span="8">
-            <a-card title="授课老师">
-                <a-row :gutter="16">
-                    <a-col>
-                        <a-image :width="100"
-                            :src="`https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png`">
-                        </a-image>
-                    </a-col>
-                    <a-col>
-                        <div>
-                            <h3>XXXXX</h3>
-                            <p>1111</p>
-                        </div>
-                    </a-col>
-                </a-row>
-            </a-card>
-
-            <a-card title="学习清单" class="mt-5 border-none">
+            <a-card :title="'学习清单 (目录)'" class="mt-5 border-none">
                 <template #extra>
                     <a-button type="text">打包下载</a-button>
                 </template>
