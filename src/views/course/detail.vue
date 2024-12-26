@@ -16,12 +16,12 @@ const rateValue = ref(2.5);
 
 function handleResClick(item) {
   message.success("all!");
-  router.push({ name: "course_Details" });
+  router.push({ name: "courseDetails" });
 }
 
 function handleDownClick(item) {
   message.success("single!");
-  router.push({ name: "course_Details" });
+  router.push({ name: "courseDetails" });
 }
 </script>
 

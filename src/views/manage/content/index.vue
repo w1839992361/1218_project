@@ -38,7 +38,6 @@ const resetForm = () => {
 };
 
 // del
-
 async function handleDelete(id) {
     const { code } = await delTree(id);
     if (code == 200) {
@@ -46,6 +45,20 @@ async function handleDelete(id) {
         getList();
     }
 }
+
+// edit 
+const editDialog = ref(false);
+const editResFormRef = ref();
+const editResForm = reactive({
+    level: '',
+    name: '',
+    parentId: '',
+});
+const editResFormRules = {
+    name: [
+        { required: true, message: '必须输入一个节点名字', trigger: 'change' },
+    ]
+};
 
 async function getList() {
     const { data } = await getAllTree();
@@ -91,26 +104,21 @@ const expandedKeys = ref([1]);
                     </div>
 
                 </div>
-                <!-- <a-button-group style="float:right">
-                        <a-button size="small" @click="slotAddSame(nodeData)" icon="plus-circle"
-                            title="添加同级"></a-button>
-                        <a-button size="small" @click="slotAddSub(nodeData)" icon="share-alt" title="添加下级"></a-button>
-                        <a-button size="small" @click="slotModify(nodeData)" icon="form" title="修改"></a-button>
-                        <a-button size="small" @click="slotDelete(nodeData)" icon="close-circle" title="删除"></a-button>
-                    </a-button-group> -->
-                <!-- <template #overlay>
-                    <a-menu @click="({ key: menuKey }) => onContextMenuClick(treeKey, menuKey)">
-                        <a-menu-item key="1">1st menu item</a-menu-item>
-                        <a-menu-item key="2">2nd menu item</a-menu-item>
-                        <a-menu-item key="3">3rd menu item</a-menu-item>
-                    </a-menu>
-                </template> -->
             </a-dropdown>
         </template>
     </a-tree>
 
     <a-modal v-model:open="addDialog" title="添加资源节点" ok-text="添加" @cancel="resetForm" cancel-text="取消" @ok="onSubmit">
         <a-form ref="addResFormRef" :model="addResForm" :rules="addResFormRules" :label-col="{ span: 5 }"
+            :wrapper-col="{ span: 13 }">
+            <a-form-item ref="name" label="节点名字" name="name">
+                <a-input v-model:value="addResForm.name" />
+            </a-form-item>
+        </a-form>
+    </a-modal>
+
+    <a-modal v-model:open="editDialog" title="编辑资源节点" ok-text="确定" @cancel="resetForm" cancel-text="取消" @ok="onSubmit">
+        <a-form ref="editResFormRef" :model="editResForm" :rules="editResFormRules" :label-col="{ span: 5 }"
             :wrapper-col="{ span: 13 }">
             <a-form-item ref="name" label="节点名字" name="name">
                 <a-input v-model:value="addResForm.name" />

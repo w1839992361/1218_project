@@ -40,7 +40,7 @@ const props = defineProps({
   fileUrl: {
     type: String,
     // default: baseUrl + '/api/videos/stream/427f9fd6-61b5-46a7-81b4-8698ba3a7633' // video
-    default: baseUrl + '/api/docs/stream/ppt/497cc880-e1a5-45d5-80ba-d6ecc67ca448' // video
+    default: '/api/docs/stream/ppt/497cc880-e1a5-45d5-80ba-d6ecc67ca448' // video
   },
   fileType: {
     type: String,

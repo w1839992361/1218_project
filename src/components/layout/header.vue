@@ -1,10 +1,13 @@
 <script setup>
 import { ref, watch } from "vue";
-import { UserOutlined } from "@ant-design/icons-vue";
+import { DownOutlined, UserOutlined, SettingOutlined, LogoutOutlined } from '@ant-design/icons-vue';
 import { useRouter, useRoute } from "vue-router";
 import { onMounted } from "vue";
 import { getAllTree } from '@/api/admin/content';
 import { getInfo } from '@/api/login';
+import { removeToken } from '@/utils';
+import { message } from "ant-design-vue";
+
 const current = ref(["home"]);
 
 const navs = ref([
@@ -23,8 +26,8 @@ getInfo().then(res => {
 })
 
 async function getHeader() {
-  const { data ,code} = await getAllTree();
-  if(code !== 200) return;
+  const { data, code } = await getAllTree();
+  if (code !== 200) return;
   let keys = {
     '课程教学': 'course',
   };
@@ -81,6 +84,13 @@ function handleSearch() {
 }
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + '/api/avatar/stream/';
+
+function handleLogout() {
+  isLogin.value = false;
+  message.success('退出成功!');
+  removeToken();
+  router.push('/');
+}
 </script>
 
 <template>
@@ -124,8 +134,33 @@ const imgUrl = baseUrl + '/api/avatar/stream/';
           登录
         </a-button>
         <template v-else>
-          <a-avatar :src="imgUrl + info.avatar" />
-          <span class="ml-2">{{ info.username }}</span>
+          <a-dropdown :trigger="['click']">
+            <div class="user-profile-wrapper">
+              <a-space>
+                <a-avatar :src="imgUrl + info.avatar" :size="32">
+                </a-avatar>
+                <span class="username">{{ info.username }}</span>
+                <down-outlined />
+              </a-space>
+            </div>
+            <template #overlay>
+              <a-menu>
+                <!-- <a-menu-item key="0">
+                  <user-outlined />
+                  个人中心
+                </a-menu-item>
+                <a-menu-item key="1">
+                  <setting-outlined />
+                  设置
+                </a-menu-item> -->
+                <!-- <a-menu-divider /> -->
+                <a-menu-item key="3" @click="handleLogout">
+                  <logout-outlined />
+                  退出登录
+                </a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
         </template>
       </div>
 

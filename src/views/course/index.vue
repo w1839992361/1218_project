@@ -3,7 +3,11 @@ import { ref, watch, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { PlayCircleOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
-import { getTagsByParentId } from '@/api/other';
+import { getTagsByParentId, getTagsByLevel } from '@/api/other';
+import { getAllTree } from '@/api/admin/content';
+import { getPreview } from '@/api/preview';
+import Classify from '@/components/classify/index.vue'
+
 const router = useRouter();
 const route = useRoute();
 
@@ -23,9 +27,10 @@ const courseTitle = ref([
 ]);
 
 const currentKeys = ref(1);
-const expandIconPosition = ref('right');
+const selectedId = ref(18);
+
 onMounted(async () => {
-    const { data } = await getTagsByParentId(route.query.course);
+    const { data, code } = await getTagsByParentId(route.query.course);
     courseTitle.value = data.map(item => {
         return {
             key: item.name,
@@ -33,7 +38,9 @@ onMounted(async () => {
         }
     });
     selectedKeys.value = [courseTitle.value[0].name];
-
+    if (code === 200) {
+        getPages(courseTitle.value[0].level + 1);
+    }
 })
 
 
@@ -88,65 +95,44 @@ function download(item) {
 
 function handleAllClick(item) {
     message.success('all!');
-    router.push({ name: 'course_Details' })
+    router.push({ name: 'courseDetails' })
 }
 
 function handleSingleClick(item) {
     message.success('single!');
-    router.push({ name: 'course_Details' })
+    router.push({ name: 'courseDetails' })
 }
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const imgUrl = baseUrl + '/api/covers/stream/';
+
+const classifyData = ref([]);
+async function getPages(level) {
+    const { data, code } = await getAllTree(level);
+    if (code === 200) {
+        classifyData.value = data;
+        console.log(classifyData.value)
+    }
+}
+
+function handleClassifyChange(item) {
+    console.log(item);
+}
 </script>
 
 <template>
     <a-menu :inlineCollapsed="false" style="width:100%;" v-model:selectedKeys="selectedKeys" mode="horizontal">
         <a-menu-item :key="item.key" v-for="item in courseTitle">
             <template #icon>
-                <img :src="item.src" width="50px" alt="">
+                <img :src="imgUrl + item.coverUuid" width="50px" alt="">
             </template>
             <h3>{{ item.name }}</h3>
         </a-menu-item>
     </a-menu>
 
     <a-card class="tag">
-        <div class="tag-item">
-            <a-button type="like" shape="round">学段:</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="primary" shape="round">一年级</a-button>
-        </div>
-
-        <div class="tag-item">
-            <a-button type="like" shape="round">学段:</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="primary" shape="round">一年级</a-button>
-        </div>
-
-        <div class="tag-item">
-            <a-button type="like" shape="round">学段:</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="primary" shape="round">一年级</a-button>
-        </div>
-        <div class="tag-item">
-            <a-button type="like" shape="round">学段:</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="default" shape="round">一年级</a-button>
-            <a-button type="primary" shape="round">一年级</a-button>
-        </div>
+        <Classify :data="classifyData" :selectedId="selectedId" v-if="classifyData.length"
+            @change="handleClassifyChange" />
     </a-card>
 
     <template v-if="selectedKeys[0] === '学科课程'">

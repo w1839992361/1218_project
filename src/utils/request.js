@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {createVNode} from 'vue';
 import { getToken } from '@/utils';
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue';
 import { message, Modal } from 'ant-design-vue';
@@ -6,6 +7,7 @@ import errorCode from '@/utils/errCode';
 import { tansParams, blobValidate } from "@/utils";
 import cache from '@/utils/cache';
 import { saveAs } from 'file-saver';
+import router from '@/router/index'
 
 // let downloadLoadingInstance;
 // 是否显示重新登录
@@ -72,7 +74,6 @@ service.interceptors.request.use(config => {
 
 // 响应拦截器
 service.interceptors.response.use(res => {
-    // console.log(res.request.responseType)
     // 未设置状态码则默认成功状态
     const code = res.data.code || 200;
     // 获取错误信息
@@ -85,11 +86,12 @@ service.interceptors.response.use(res => {
         if (!isRelogin.show) {
             isRelogin.show = true;
             Modal.confirm({
-                title: 'Do you want to delete these items?',
+                title: '系统提示',
                 icon: createVNode(ExclamationCircleOutlined),
-                content: 'When clicked the OK button, this dialog will be closed after 1 second',
+                content: '登录状态已过期，您可以继续留在该页面，或者重新登录',
                 onOk() {
                     isRelogin.show = false;
+                    router.push({ name: 'login' });
                 },
                 onCancel() {
                     isRelogin.show = false;
@@ -118,6 +120,23 @@ service.interceptors.response.use(res => {
             msg = "系统接口请求超时";
         } else if (msg.includes("Request failed with status code")) {
             msg = "系统接口" + msg.substr(msg.length - 3) + "异常";
+        }
+        if (error.status === 403 || error.status === 401) {
+            if (!isRelogin.show) {
+                isRelogin.show = true;
+                Modal.confirm({
+                    title: '系统提示',
+                    icon: createVNode(ExclamationCircleOutlined),
+                    content: '登录状态已过期，您可以继续留在该页面，或者重新登录',
+                    onOk() {
+                        isRelogin.show = false;
+                        router.push({ name: 'login' });
+                    },
+                    onCancel() {
+                        isRelogin.show = false;
+                    },
+                });
+            }
         }
         message.error(msg);
         return Promise.reject(error)

@@ -7,3 +7,10 @@ export function getFile(name) {
         responseType: 'blob'
     })
 }
+
+export function getPreview(url){
+    return request({
+        url: url,
+        method: 'get',
+    })
+}
