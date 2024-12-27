@@ -16,9 +16,9 @@ export function addTree(data) {
   })
 }
 
-export function updateTree(data,id) {
+export function updateTree(data, id) {
   return request({
-    url: '/api/teriTag/update/' +id,
+    url: '/api/teriTag/update/' + id,
     method: 'post',
     data
   })
@@ -39,7 +39,7 @@ export function uploadCover(params, data) {
     data,
     headers: {
       'Content-Type': 'multipart/form-data',
-  },
+    },
   })
 }
 
@@ -51,7 +51,32 @@ export function uploadVideo(params, data) {
     data,
     headers: {
       'Content-Type': 'multipart/form-data',
-  },
+    },
+  })
+}
+export function getVideoUUID(id) {
+  return request({
+    url: `/api/videos/getVideoUUID/${id}`,
+    method: 'get',
   })
 }
 
+export function getVideoInfo(id) {
+  return request({
+    url: `/api/videos/info/${id}`,
+    method: 'get',
+  })
+}
+
+
+export function uploadDocs(params, data) {
+  const queryParams = new URLSearchParams(params).toString();
+  return request({
+    url: `/api/docs/upload?${queryParams}`,
+    method: 'POST',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+}
