@@ -65,16 +65,16 @@ const router = createRouter({
           component: () => import('@/views/manage/content/index.vue'),
         },
         {
-          path: 'users',
-          name: 'Users',
-          meta: { title: '用户管理' },
-          component: () => import('@/views/manage/user/index.vue'),
-        },
-        {
           path: 'dataUpdate',
           name: 'DataUpdate',
-          meta: { title: '数据同步' },
+          meta: { title: '数据上传' },
           component: () => import('@/views/manage/data/index.vue'),
+        },
+        {
+          path: 'dataGet',
+          name: 'DataGet',
+          meta: { title: '数据同步' },
+          component: () => import('@/views/manage/getData/index.vue'),
         },
       ]
     }

@@ -19,7 +19,7 @@ const service = axios.create({
     // axios中请求配置有baseURL选项，表示请求URL公共部分
     baseURL: import.meta.env.VITE_API_BASE_URL,
     // 超时
-    timeout: 10000
+    timeout: 10000000
 })
 
 
@@ -82,7 +82,7 @@ service.interceptors.response.use(res => {
     if (res.request.responseType === 'blob' || res.request.responseType === 'arraybuffer') {
         return res.data
     }
-    if (code === 401) {
+    if (code === 403) {
         if (!isRelogin.show) {
             isRelogin.show = true;
             Modal.confirm({
@@ -121,7 +121,7 @@ service.interceptors.response.use(res => {
         } else if (msg.includes("Request failed with status code")) {
             msg = "系统接口" + msg.substr(msg.length - 3) + "异常";
         }
-        if (error.status === 403 || error.status === 401) {
+        if (error.status === 403) {
             if (!isRelogin.show) {
                 isRelogin.show = true;
                 Modal.confirm({

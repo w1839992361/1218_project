@@ -1,12 +1,21 @@
 <script setup>
+import { useRouter } from 'vue-router';
+const router = useRouter();
+function handleGoByNmae(name) {
+    router.push({name})
+}
 </script>
 
 
 <template>
 
-    <div class="footer">
-        <div>主办单位:1111111</div>
-        <div>主办单位:1111111</div>
+    <div class="h-[100px] bg-[#e0eeff] flex items-center justify-center">
+        <a-button type="primary" @click="handleGoByNmae('DataUpdate')">
+            同步数据(学校使用)
+        </a-button>
+        <a-button type="primary" class="ml-2" @click="handleGoByNmae('Contents')">
+            管理资源(教育局使用)
+        </a-button>
     </div>
 
 </template>
@@ -17,16 +26,5 @@
 div {
     width: 100%;
     text-align: center;
-}
-
-.footer {
-    width: 100%;
-    background: #e0eeff;
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-    padding:20px 10px;
-    box-sizing: border-box;
-    height: 100px;
 }
 </style>

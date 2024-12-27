@@ -16,9 +16,42 @@ export function addTree(data) {
   })
 }
 
+export function updateTree(data,id) {
+  return request({
+    url: '/api/teriTag/update/' +id,
+    method: 'post',
+    data
+  })
+}
+
 export function delTree(id) {
   return request({
     url: '/api/teriTag/delete/' + id,
     method: 'delete',
   })
 }
+
+export function uploadCover(params, data) {
+  const queryParams = new URLSearchParams(params).toString();
+  return request({
+    url: `/api/covers/upload?${queryParams}`,
+    method: 'POST',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+  },
+  })
+}
+
+export function uploadVideo(params, data) {
+  const queryParams = new URLSearchParams(params).toString();
+  return request({
+    url: `/api/videos/upload?${queryParams}`,
+    method: 'POST',
+    data,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+  },
+  })
+}
+

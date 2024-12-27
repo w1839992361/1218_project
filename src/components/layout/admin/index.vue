@@ -1,65 +1,41 @@
 <script setup>
-import { reactive, watch, h } from 'vue';
-import { RouterView, useRouter } from 'vue-router';
+import { reactive, h, onMounted, ref } from 'vue';
+import { RouterView, useRouter, useRoute } from 'vue-router';
 import {
     FileAddOutlined,
-    UserOutlined,
     DatabaseOutlined,
 } from '@ant-design/icons-vue';
 const state = reactive({
-    selectedKeys: ['1'],
+    selectedKeys: ['Contents'],
 });
 
+const route = useRoute();
+
 const router = useRouter();
-const items = reactive([
+const items = ref([
     {
-        key: '1',
+        key: 'Contents',
         icon: () => h(FileAddOutlined),
-        label: '内容管理',
+        label: '内容管理(教育局使用)',
         title: 'Contents',
     },
-    {
-        key: '2',
-        icon: () => h(UserOutlined),
-        label: '用户管理',
-        title: 'Users',
-    },
-    {
-        key: '3',
-        icon: () => h(DatabaseOutlined),
-        label: '数据同步',
-        title: 'DataUpdate',
-    },
     // {
-    //     key: 'sub1',
-    //     icon: () => h(MailOutlined),
-    //     label: 'Navigation One',
-    //     title: 'Navigation One',
-    //     children: [
-    //         {
-    //             key: '5',
-    //             label: 'Option 5',
-    //             title: 'Option 5',
-    //         },
-    //         {
-    //             key: '6',
-    //             label: 'Option 6',
-    //             title: 'Option 6',
-    //         },
-    //         {
-    //             key: '7',
-    //             label: 'Option 7',
-    //             title: 'Option 7',
-    //         },
-    //         {
-    //             key: '8',
-    //             label: 'Option 8',
-    //             title: 'Option 8',
-    //         },
-    //     ],
+    //     key: 'DataUpdate',
+    //     icon: () => h(DatabaseOutlined),
+    //     label: '数据上传(教育局使用)',
+    //     title: 'DataUpdate',
     // },
-
+    {
+        key: 'DataGet',
+        icon: () => h(DatabaseOutlined),
+        label: '数据同步(学校使用)',
+        title: 'DataGet',
+    },
 ]);
+
+onMounted(() => {
+    state.selectedKeys = [route.name];
+})
 
 function handleClick({ item }) {
     router.push({ name: item.title })
@@ -78,7 +54,9 @@ function handleClick({ item }) {
         </div>
 
         <div class="scrollbar w-[calc(100%-226px)] m-3 p-3 bg-[#fff]  overflow-y-scroll">
-            <RouterView />
+            <Suspense>
+                <RouterView />
+            </Suspense>
         </div>
     </div>
 </template>

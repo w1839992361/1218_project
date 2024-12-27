@@ -27,7 +27,7 @@ const courseTitle = ref([
 ]);
 
 const currentKeys = ref(1);
-const selectedId = ref(18);
+const selectedId = ref();
 
 onMounted(async () => {
     const { data, code } = await getTagsByParentId(route.query.course);
@@ -117,6 +117,10 @@ async function getPages(level) {
 
 function handleClassifyChange(item) {
     console.log(item);
+}
+
+function handleExtensions(item) {
+    router.push({name:'courseExtendDetail'});
 }
 </script>
 
@@ -216,10 +220,10 @@ function handleClassifyChange(item) {
         </a-card>
     </template>
 
-    <template v-if="selectedKeys[0] === 'extensions'">
+    <template v-if="selectedKeys[0] === '拓展课程'">
         <a-card class="pages">
             <a-row :gutter="16">
-                <a-col :span="6" v-for="item in 10">
+                <a-col :span="6" @click="handleExtensions(item)" v-for="item in 10">
                     <a-card class="page" hoverable>
                         <template #cover>
                             <img alt="example" class="max-h-[150px] "
