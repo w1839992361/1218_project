@@ -80,3 +80,17 @@ export function uploadDocs(params, data) {
     },
   })
 }
+
+// export function getVideoUUID(id) {
+//   return request({
+//     url: `/api/videos/getVideoUUID/${id}`,
+//     method: 'get',
+//   })
+// }
+
+export function getDocsInfo(id) {
+  return request({
+    url: `/api/docs/info/${id}`,
+    method: 'get',
+  })
+}

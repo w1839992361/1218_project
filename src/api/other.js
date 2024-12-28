@@ -14,6 +14,13 @@ export function getTagsByParentId(id){
   })
 }
 
+export function getTagsById(id){
+  return request({
+    url: '/api/teriTag/tree/id/'+id,
+    method: 'get'
+  })
+}
+
 
 // // 查询缓存名称列表
 // export function listCacheName() {

@@ -36,7 +36,7 @@ export function getSqlFile() {
 
 export function getUpdateZip() {
     return request({
-        url: '/api/update/getUpdateZip',
+        url: '/api/update/getUpdateZip/1',
         method: 'get'
     })
 }

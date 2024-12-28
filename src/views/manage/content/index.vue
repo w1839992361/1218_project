@@ -8,6 +8,7 @@ import {
   updateTree,
   uploadVideo,
   getVideoUUID,
+  getDocsInfo,
   getVideoInfo,
   uploadDocs,
 } from "@/api/admin/content";
@@ -38,7 +39,7 @@ const onSubmit = () => {
     const { code } = await addTree(toRaw(addResForm));
     if (code == 200) {
       message.success("添加成功!");
-      resetForm();
+      addResetForm();
       getList();
     }
   });
@@ -280,12 +281,35 @@ const docResForm = reactive({
   homeworkFile: "",
   leanTaskFile: "",
 });
+const viewDocDialog = ref(false);
+const columnsDocs = [
+  {
+    title: "清单文件",
+    dataIndex: "fileName",
+    key: "fileName",
+  },
+  {
+    title: "资源编码",
+    dataIndex: "fileCode",
+    key: "fileCode",
+  },
+  {
+    title: "上传时间",
+    dataIndex: "createTime",
+    key: "createTime",
+  },
+  // {
+  //     title: '住址',
+  //     dataIndex: 'address',
+  //     key: 'address',
+  // },
+];
 const docResFormRules = {
-  title: [{ required: true, message: "必须输入清单标题", trigger: "change" }],
-  pptFile: [{ required: true, message: "必须上传 PPT 文件", trigger: "change" }],
-  designClassFile: [{ required: true, message: "必须上传设计课文件", trigger: "change" }],
-  homeworkFile: [{ required: true, message: "必须上传作业文件", trigger: "change" }],
-  leanTaskFile: [{ required: true, message: "必须上传学习任务文件", trigger: "change" }],
+  title: [{ required: true, message: "必须输入清单标题", trigger: ["blur", "change"] }],
+  pptFile: [{ required: true, message: "必须上传 PPT 文件", trigger: ["blur"] }],
+  designClassFile: [{ required: true, message: "必须上传设计课文件", trigger: ["blur"] }],
+  homeworkFile: [{ required: true, message: "必须上传作业文件", trigger: ["blur"] }],
+  leanTaskFile: [{ required: true, message: "必须上传学习任务文件", trigger: ["blur"] }],
 };
 function handleDocSubmit() {
   docResFormRef.value.validate().then(async () => {
@@ -298,7 +322,7 @@ function handleDocSubmit() {
     const { code, data } = await uploadDocs({ title, resourceUUID }, formData);
     if (code == 200) {
       docVideoDialog.value = false;
-    //   editResForm.docsUuid = data;
+      //   editResForm.docsUuid = data;
       message.success("添加成功!");
       docResetForm();
       getList();
@@ -323,23 +347,34 @@ function handlePPTChange({ file }) {
   docResForm.pptFile = file;
   return false;
 }
-
 function handleDesignClassChange({ file }) {
   designClassList.value = [file];
   docResForm.designClassFile = file;
   return false;
 }
-
 function handleHomeworkChange({ file }) {
   homeworkList.value = [file];
   docResForm.homeworkFile = file;
   return false;
 }
-
 function handleLeanTaskChange({ file }) {
   leanTaskList.value = [file];
   docResForm.leanTaskFile = file;
   return false;
+}
+async function handleViewDocs(id) {
+  const { data, code } = await getDocsInfo(id);
+  if (code === 200 && data.length) {
+    viewDocDialog.value = true;
+    uploadedDocs.value = data;
+    // uploadedDocs.value = await Promise.all(
+    //   data.map(async (item) => {
+    //     return (await getVideoInfo(item)).data;
+    //   })
+    // );
+  } else {
+    message.warning("还未上传清单资源！");
+  }
 }
 
 async function getList() {
@@ -484,11 +519,7 @@ const expandedKeys = ref([1]);
             查看已上传
           </a-button>
         </a-form-item>
-        <a-form-item
-          label="学习清单"
-          name="docsUuid"
-          
-        >
+        <a-form-item label="学习清单" name="docsUuid">
           <a-button type="primary" @click="handleUploadDocs(editResForm.resourceUuid)">
             <template #icon>
               <UploadOutlined />
@@ -498,7 +529,7 @@ const expandedKeys = ref([1]);
           <a-button
             class="ml-2"
             type="primary"
-            @click="handleViewVideos(editResForm.resourceUuid)"
+            @click="handleViewDocs(editResForm.resourceUuid)"
           >
             <template #icon>
               <UploadOutlined />
@@ -621,6 +652,7 @@ const expandedKeys = ref([1]);
   </a-modal>
   <!-- view video -->
   <a-modal
+    width="1000px"
     v-model:open="viewVideoDialog"
     title="已上传视频"
     ok-text="确定"
@@ -722,6 +754,23 @@ const expandedKeys = ref([1]);
         </a-upload>
       </a-form-item>
     </a-form>
+  </a-modal>
+
+  <!-- view video -->
+  <a-modal
+    width="1000px"
+    v-model:open="viewDocDialog"
+    title="已上传清单"
+    ok-text="确定"
+    @cancel="viewDocDialog = false"
+    cancel-text="取消"
+    @ok="viewDocDialog = false"
+  >
+    <a-table
+      :dataSource="uploadedDocs"
+      :columns="columnsDocs"
+      :pagination="{ pageSize: 5 }"
+    />
   </a-modal>
 </template>
 
