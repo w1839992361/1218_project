@@ -79,65 +79,6 @@ function handleDownClick(item) {
                         </div>
                     </a-col>
 
-                    <a-col :span="24">
-                        <div class="list-container">
-                            <!-- 理论课程 -->
-                            <div class="list-item" @click="handleResClick">
-                                <div class="item-left">
-                                    <div class="circle-icon blue">
-                                        <SvgIcon icon="paper" width="20" height="20" />
-                                    </div>
-                                    <span class="item-text">学习任务单</span>
-                                </div>
-                                <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
-                            </div>
-                        </div>
-                    </a-col>
-
-                    <a-col :span="24">
-                        <div class="list-container">
-                            <!-- 理论课程 -->
-                            <div class="list-item" @click="handleResClick">
-                                <div class="item-left">
-                                    <div class="circle-icon blue">
-                                        <SvgIcon icon="book" width="20" height="20" />
-                                    </div>
-                                    <span class="item-text">课后练习</span>
-                                </div>
-                                <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
-                            </div>
-                        </div>
-                    </a-col>
-
-                    <a-col :span="24">
-                        <div class="list-container">
-                            <!-- 理论课程 -->
-                            <div class="list-item" @click="handleResClick">
-                                <div class="item-left">
-                                    <div class="circle-icon blue">
-                                        <SvgIcon icon="paper" width="20" height="20" />
-                                    </div>
-                                    <span class="item-text">教学设计</span>
-                                </div>
-                                <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
-                            </div>
-                        </div>
-                    </a-col>
-
-                    <a-col :span="24">
-                        <div class="list-container">
-                            <!-- 理论课程 -->
-                            <div class="list-item" @click="handleResClick">
-                                <div class="item-left">
-                                    <div class="circle-icon blue">
-                                        <SvgIcon icon="book" width="20" height="20" />
-                                    </div>
-                                    <span class="item-text">教学课件</span>
-                                </div>
-                                <DownloadOutlined @click.stop="handleDownClick" class="download-icon" />
-                            </div>
-                        </div>
-                    </a-col>
                 </a-row>
             </a-card>
         </a-col>

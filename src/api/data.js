@@ -36,8 +36,9 @@ export function getSqlFile() {
 
 export function getUpdateZip() {
     return request({
-        url: '/api/update/getUpdateZip/1',
-        method: 'get'
+        url: '/api/update/getUpdateZip/0',
+        method: 'get',
+        responseType: 'blob'
     })
 }
 
@@ -46,6 +47,15 @@ export function getUpdateVersion() {
     return request({
         url: '/api/update/getUpdateVersion',
         method: 'get'
+    })
+}
+
+
+export function createAUpdate(data) {
+    return request({
+        url: '/api/update/createAUpdate',
+        method: 'post',
+        data
     })
 }
 

@@ -116,9 +116,9 @@ const uploadZip = async ({ file, onProgress }) => {
                         <a-col :span="12">
                             <p>当前版本: {{ sqlVersion }}</p>
                         </a-col>
-                        <a-col :span="12">
-                            <p>上次同步时间: {{ sqlLastSync || '从未同步' }}</p>
-                        </a-col>
+<!--                        <a-col :span="12">-->
+<!--                            <p>上次同步时间: {{ sqlLastSync || '从未同步' }}</p>-->
+<!--                        </a-col>-->
                     </a-row>
                     <a-upload :customRequest="uploadSql" :showUploadList="false" accept=".sql" :disabled="uploadingSql">
                         <a-button :loading="uploadingSql">
@@ -146,9 +146,9 @@ const uploadZip = async ({ file, onProgress }) => {
                         <a-col :span="12">
                             <p>当前版本: {{ zipVersion }}</p>
                         </a-col>
-                        <a-col :span="12">
-                            <p>上次同步时间: {{ zipLastSync || '从未同步' }}</p>
-                        </a-col>
+<!--                        <a-col :span="12">-->
+<!--                            <p>上次同步时间: {{ zipLastSync || '从未同步' }}</p>-->
+<!--                        </a-col>-->
                     </a-row>
                     <a-upload :customRequest="uploadZip" :showUploadList="false" accept=".zip" :disabled="uploadingZip">
                         <a-button :loading="uploadingZip">

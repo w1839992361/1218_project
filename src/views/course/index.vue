@@ -4,7 +4,18 @@ import { useRouter, useRoute } from "vue-router";
 import { PlayCircleOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { getTagsByParentId, getTagsByLevel, getTagsById } from "@/api/other";
-import { getAllTree } from "@/api/admin/content";
+// import {
+//   getAllTree,
+//   addTree,
+//   delTree,
+//   uploadCover,
+//   updateTree,
+//   uploadVideo,
+
+//   getDocsInfo,
+//   uploadDocs,
+// } from "@/api/admin/content";
+import { getAllTree, getVideoUUID, getVideoInfo } from "@/api/admin/content";
 import { getPreview } from "@/api/preview";
 import Classify from "@/components/classify/index.vue";
 
@@ -40,9 +51,7 @@ onMounted(async () => {
   }
 });
 
-const sections = ref([
- 
-]);
+const sections = ref([]);
 
 function download(item) {
   message.success("success!");
@@ -53,9 +62,9 @@ function handleAllClick(item) {
   router.push({ name: "courseDetails" });
 }
 
-function handleSingleClick(item) {
+function handleSingleClick(info) {
   message.success("single!");
-  router.push({ name: "courseDetails" });
+  router.push({ name: "courseDetails" ,query:{...info}});
 }
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -64,11 +73,17 @@ const imgUrl = baseUrl + "/api/covers/stream/";
 const selectedId = ref();
 const currentClassify = ref();
 const classifyData = ref([]);
-
+const videos = ref();
+const allresourceUuid = ref();
+const pageLoading = ref(true);
+const classLoading = ref(true);
+const isLoading = ref(true);
 async function getClassifyData(id) {
+
   const { data, code } = await getTagsById(id);
   if (code === 200) {
     classifyData.value = data[0].children;
+    classLoading.value = false;
   }
 }
 
@@ -76,21 +91,87 @@ async function getPages(id) {
   const { data, code } = await getTagsById(id);
   if (code === 200 && data.length) {
     sections.value = data[0].children;
+    allresourceUuid.value = sections.value.map((unit) => ({
+      id: unit.id,
+      name: unit.name,
+      resourceUuids: extractResourceUuids(unit.children),
+    }));
+    pageLoading.value = false;
   }
+}
+function extractResourceUuids(nodes) {
+  let uuids = [];
+  function traverse(node) {
+    if (node.resourceUuid) {
+      uuids.push(node.resourceUuid);
+    }
+    if (node.children && node.children.length > 0) {
+      node.children.forEach((child) => traverse(child));
+    }
+  }
+  if (nodes && nodes.length) {
+    nodes.forEach((node) => traverse(node));
+  }
+  return uuids;
 }
 
 function handleClassifyChange(item) {
+  sections.value = [];
+  pageLoading.value = true;
   currentClassify.value = item;
   item?.id && getPages(item?.id);
 }
 
 function handleMenuChange(item) {
+  classLoading.value = true;
   let id = courseTitle.value.find((c) => c.name === item.key)?.id;
   id && getClassifyData(id);
 }
 
 function handleExtensions(item) {
-  router.push({ name: "courseExtendDetail" });
+  router.push({ name: "courseExtendDetail",query:{...item} });
+}
+
+async function handleCollapseChange(id) {
+  isLoading.value = true;
+  let currentResourceUuids = allresourceUuid.value.find((u) => u.id == id)?.resourceUuids;
+  if (currentResourceUuids && currentResourceUuids.length) {
+    let videosMapping = await Promise.all(
+      currentResourceUuids.map(async (uuid) => {
+        let videos = await getVideos(uuid);
+        isLoading.value = false;
+        return { [uuid]: videos };
+      })
+    );
+
+    videos.value = Object.assign({}, ...videosMapping);
+  } else {
+    isLoading.value = false;
+    videos.value = {};
+  }
+}
+
+async function getVideos(uuid) {
+  const { data, code } = await getVideoUUID(uuid);
+  if (code === 200 && data.length) {
+    let videos = await Promise.all(
+      data.map(async (item) => {
+        return (await getVideoInfo(item)).data;
+      })
+    );
+    return videos;
+  } else {
+    isLoading.value = false;
+    return [];
+  }
+}
+
+function getVideosByUid(uid) {
+  if (videos.value?.[uid]) {
+    return videos.value[uid];
+  } else {
+    return [];
+  }
 }
 </script>
 
@@ -110,7 +191,7 @@ function handleExtensions(item) {
     </a-menu-item>
   </a-menu>
 
-  <a-card class="tag">
+  <a-card class="tag" :loading="classLoading">
     <Classify
       :data="classifyData"
       :selectedId="selectedId"
@@ -120,16 +201,18 @@ function handleExtensions(item) {
   </a-card>
 
   <template v-if="selectedKeys[0] === '学科课程'">
-    <a-card title="目录" class="pages">
+    <a-card :loading="pageLoading" title="目录" class="pages">
       <a-collapse
         v-model:activeKey="currentKeys"
         :bordered="false"
         accordion
+
+        @change="handleCollapseChange"
         expand-icon-position="end"
       >
         <a-collapse-panel
           v-for="collapse in sections"
-          :key="collapse.key"
+          :key="collapse.id"
           :header="collapse.name"
         >
           <template #extra>
@@ -138,7 +221,7 @@ function handleExtensions(item) {
             </a-button>
           </template>
           <!-- 遍历每个部分 -->
-          <a-row :gutter="16">
+          <a-row  :gutter="16">
             <!-- 遍历每个部分 -->
             <a-col
               :span="24"
@@ -147,87 +230,66 @@ function handleExtensions(item) {
               class="section"
             >
               <!-- 部分标题 -->
-              <a-row :gutter="16">
-                <a-col :span="12">
-                  <h3>
+              <a-row  :gutter="16" class="flex justify-between items-center">
+                <a-col>
+                  <h3 class="text-xl">
                     {{ section.name }}
                   </h3>
                 </a-col>
-                <a-col :span="12" style="text-align: right">
-                  <a-button type="link" @click="download(section)">下载</a-button>
+                <a-col>
+                  <a-button type="text" @click="download(section)"> 打包下载 </a-button>
                 </a-col>
               </a-row>
-              <!-- <a-typography-title level="6" class="section-title"></a-typography-title> -->
 
-              <!-- 子项列表 -->
-              <a-row
-                @click="handleAllClick(item)"
-                style="background-color: #fafafa; margin: 20px 0; cursor: pointer"
-                v-for="item in section.children"
-                :key="item.key"
-                class="section-item"
+              <a-spin v-if="isLoading" :spinning="isLoading"></a-spin>
+
+              <div
+                v-else
+                v-for="page in section.children"
+                :key="page.id"
+                class="flex justify-between bg-gray-50 px-4 py-2"
               >
-                <!-- 左侧标题 -->
-                <a-col :span="17" :offset="1">
-                  <template v-if="item.children.length === 1">
-                    <a-button
-                      type="text"
-                      @click.stop="handleSingleClick(content)"
-                      v-for="(content, contentIndex) in item.children"
-                      :key="contentIndex"
-                      style="margin-left: 0; padding-left: 0px"
-                      class="content-button"
-                    >
-                      {{ content }}
-                      <template #icon>
-                        <PlayCircleOutlined class="play" />
-                      </template>
-                    </a-button>
-                  </template>
-                  <template v-else>
-                    <span>{{ item.name }}</span>
+                <!-- 左侧内容区域 - 允许换行 -->
+                <div class="flex flex-wrap items-center gap-4 flex-1">
+                  <div class="flex items-center">
+                    {{ page.name }}
+                  </div>
 
-                    <a-button
-                      @click.stop="handleSingleClick(content)"
-                      v-for="(content, contentIndex) in item.children"
-                      :key="contentIndex"
-                      class="content-button"
-                    >
-                      {{ content }}
-                      <template #icon>
-                        <PlayCircleOutlined class="play" />
-                      </template>
-                    </a-button>
-                  </template>
-                </a-col>
+                  <a-button
+                    class="flex items-center"
+                    @click.stop="handleSingleClick(page)"
+                    v-for="video in getVideosByUid(page.resourceUuid)"
+                    :key="video.id"
+                  >
+                    {{ video.title }}
+                    <PlayCircleOutlined class="ml-1 text-gray-400" />
+                  </a-button>
+                </div>
 
-                <!-- 右侧下载 -->
-                <a-col :span="6" class="download-button">
-                  <a-button type="link" @click.stop="download(item)">下载</a-button>
-                </a-col>
-              </a-row>
+                <!-- 右侧下载按钮 - 固定位置 -->
+                <a-button @click="download(section)" type="text" class="text-gray-500 ml-4 shrink-0 flex items-center">下载</a-button>
+              </div>
             </a-col>
           </a-row>
         </a-collapse-panel>
       </a-collapse>
-
     </a-card>
   </template>
 
   <template v-if="selectedKeys[0] === '拓展课程'">
-    <a-card class="pages">
-      <a-row :gutter="16">
-        <a-col :span="6" @click="handleExtensions(item)" v-for="item in 10">
+    <a-card :loading="pageLoading" class="pages min-h-[500px]">
+      <a-row :gutter="16" class=" min-h-[500px]">
+        <a-col :span="6" @click="handleExtensions(item)" v-for="item in sections">
           <a-card class="page" hoverable>
             <template #cover>
               <img
-                alt="example"
-                class="max-h-[150px]"
-                src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png"
+                alt="preview"
+                class="max-h-[150px] "
+                :src="baseUrl+'/api/covers/stream/'+item?.coverUuid"
               />
             </template>
-            <a-card-meta title="Europe Street beat">
-              <template #description>www.instagram.com</template>
+            <a-card-meta :title="item.name">
+              <template #description>{{item.description}}</template>
             </a-card-meta>
           </a-card>
         </a-col>

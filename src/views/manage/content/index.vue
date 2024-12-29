@@ -19,6 +19,32 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const treeData = ref([]);
 
+// add cloumn
+const columnDialog = ref(false);
+const columResFormRef = ref();
+const columResForm = reactive({
+  level: 0,
+  name: "",
+  description: "栏目",
+});
+const columResFormRules = {
+  name: [{ required: true, message: "必须输入一个栏目标题", trigger: "change" }],
+};
+const handleColumnSubmit = () => {
+  columResFormRef.value.validate().then(async () => {
+    const { code } = await addTree(toRaw(columResForm));
+    if (code == 200) {
+      message.success("添加成功!");
+      columnResetForm();
+      getList();
+    }
+  });
+};
+const columnResetForm = () => {
+  columResFormRef.value.resetFields();
+  columnDialog.value = false;
+};
+
 // add
 const addDialog = ref(false);
 const addResFormRef = ref();
@@ -32,7 +58,7 @@ const addResForm = reactive({
 const addResFormRules = {
   name: [{ required: true, message: "必须输入一个节点名字", trigger: "change" }],
   description: [{ required: true, message: "必须输入描述", trigger: "change" }],
-  code: [{ required: false, message: "必须输入资源编码", trigger: "change" }],
+  code: [{ required: true, message: "必须输入资源编码", trigger: "change" }],
 };
 const onSubmit = () => {
   addResFormRef.value.validate().then(async () => {
@@ -79,7 +105,11 @@ const editResetForm = () => {
   editResFormRef.value.resetFields();
   editDialog.value = false;
 };
+const isXueke = ref(false);
 function handleEdit(item) {
+  // console.log(item)
+  isXueke.value = findTopLevelNode(treeData.value, item.id,'学科课程')?.title?.name === '学科课程' || item.name ==='学科课程' ;
+  // console.log(isXueke.value)
   Object.assign(editResForm, { ...item });
   editDialog.value = true;
 }
@@ -377,9 +407,15 @@ async function handleViewDocs(id) {
   }
 }
 
+const isLoading = ref(true);
+const expandedKeys = ref([]);
+
 async function getList() {
+  isLoading.value = true;
   const { data } = await getAllTree();
   treeData.value = data.map((item) => transformNode(item));
+  expandedKeys.value = treeData.value[0].id
+  isLoading.value = false;
   console.log(treeData.value);
 }
 
@@ -394,47 +430,107 @@ function transformNode(node) {
   };
 }
 
-// const onContextMenuClick = (treeKey, menuKey) => {
-//     console.log(`treeKey: ${treeKey}, menuKey: ${menuKey}`);
-// };
-const expandedKeys = ref([1]);
+
+
+function findTopLevelNode(treeData, targetId, limitToNodeName = null) {
+  let result = null;
+
+  // 深度优先搜索查找节点
+  function dfs(node, parentChain) {
+    if (node.title.id === targetId) {
+      let targetLevel = parentChain.length - 1;
+      if (limitToNodeName) {
+        // 如果指定限制的节点名称，则向上寻找符合条件的节点
+        while (targetLevel >= 0 && parentChain[targetLevel].title.name !== limitToNodeName) {
+          targetLevel--;
+        }
+      }
+      result = parentChain[targetLevel] || parentChain[0] || node;
+      return;
+    }
+
+    if (node.children && node.children.length) {
+      for (let child of node.children) {
+        dfs(child, [...parentChain, node]);
+        if (result) return; // 找到结果就停止递归
+      }
+    }
+  }
+
+  for (let root of treeData) {
+    dfs(root, []);
+    if (result) break;
+  }
+
+  return result;
+}
 </script>
 <template>
-  <a-tree showLine blockNode v-model:expandedKeys="expandedKeys" :tree-data="treeData">
-    <template #title="{ key: treeKey, title }">
-      <a-dropdown :trigger="['contextmenu']">
-        <div class="w-[100%] flex justify-between">
+  <a-card :loading="isLoading">
+    <template #extra>
+      <a-button @click="columnDialog = true">增加栏目</a-button>
+    </template>
+    <a-tree defaultExpandAll showLine blockNode  :tree-data="treeData">
+      <template #title="{ key: treeKey, title }">
+        <a-dropdown :trigger="['contextmenu']">
+          <div class="w-[100%] flex justify-between">
           <span>
             {{ title.name }}
           </span>
-          <!-- {{ addResForm }} -->
-          <div>
-            <a-button
-              class="ml-2"
-              size="small"
-              @click="
+            <!-- {{ addResForm }} -->
+            <div>
+              <a-button
+                  class="ml-2"
+                  size="small"
+                  type="primary"
+                  @click="
                 addDialog = true;
                 addResForm.level = title.level + 1;
                 addResForm.parentId = treeKey;
               "
               >添加</a-button
-            >
-            <!-- <a-button class="ml-2" size="small">添加下级</a-button> -->
-            <a-button class="ml-2" size="small" @click="handleEdit(title)">编辑</a-button>
-            <a-popconfirm
-              title="确定是否删除该节点"
-              ok-text="删除"
-              cancel-text="取消"
-              @confirm="handleDelete(treeKey)"
-            >
-              <a-button class="ml-2" size="small">删除</a-button>
-            </a-popconfirm>
+              >
+              <!-- <a-button class="ml-2" size="small">添加下级</a-button> -->
+              <a-button class="ml-2" size="small"  warning @click="handleEdit(title)">编辑</a-button>
+              <a-popconfirm
+                  title="确定是否删除该节点"
+                  ok-text="删除"
+                  cancel-text="取消"
+                  :disabled="title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'"
+                  @confirm="handleDelete(treeKey)"
+              >
+                <a-button :disabled="title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'" danger class="ml-2" size="small">删除</a-button>
+              </a-popconfirm>
+            </div>
           </div>
-        </div>
-      </a-dropdown>
-    </template>
-  </a-tree>
+        </a-dropdown>
+      </template>
+    </a-tree>
 
+  </a-card>
+
+<!--  add lanmu-->
+  <!-- cover -->
+  <a-modal
+      v-model:open="columnDialog"
+      title="增加栏目"
+      ok-text="确定"
+      @cancel="columnResetForm"
+      cancel-text="取消"
+      @ok="handleColumnSubmit"
+  >
+    <a-form
+        ref="columResFormRef"
+        :model="columResForm"
+        :rules="columResFormRules"
+        :label-col="{ span: 5 }"
+        :wrapper-col="{ span: 13 }"
+    >
+      <a-form-item label="栏目标题" name="name">
+        <a-input v-model:value="columResForm.name" />
+      </a-form-item>
+    </a-form>
+  </a-modal>
   <!-- add -->
   <a-modal
     v-model:open="addDialog"
@@ -519,7 +615,7 @@ const expandedKeys = ref([1]);
             查看已上传
           </a-button>
         </a-form-item>
-        <a-form-item label="学习清单" name="docsUuid">
+        <a-form-item v-if="isXueke" label="学习清单" name="docsUuid">
           <a-button type="primary" @click="handleUploadDocs(editResForm.resourceUuid)">
             <template #icon>
               <UploadOutlined />
@@ -690,7 +786,7 @@ const expandedKeys = ref([1]);
       <a-form-item label="PPT" name="pptFile">
         <a-upload
           :customRequest="handlePPTChange"
-          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,txt,.pdf"
+          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,.txt,.pdf"
           v-model:file-list="pptList"
           name="coverFile"
           list-type="picture-card"
@@ -707,7 +803,7 @@ const expandedKeys = ref([1]);
       <a-form-item label="设计课文件" name="designClassFile">
         <a-upload
           :customRequest="handleDesignClassChange"
-          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,txt,.pdf"
+          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,.txt,.pdf"
           v-model:file-list="designClassList"
           name="designClassFile"
           list-type="picture-card"
@@ -724,7 +820,7 @@ const expandedKeys = ref([1]);
       <a-form-item label="作业文件" name="homeworkFile">
         <a-upload
           :customRequest="handleHomeworkChange"
-          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,txt,.pdf"
+          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,.txt,.pdf"
           v-model:file-list="homeworkList"
           name="homeworkFile"
           list-type="picture-card"
@@ -741,7 +837,7 @@ const expandedKeys = ref([1]);
       <a-form-item label="学习任务文件" name="leanTaskFile">
         <a-upload
           :customRequest="handleLeanTaskChange"
-          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,txt,.pdf"
+          accept=".pptx,.docx,.xlsx,.xls,.mp4,.html,.txt,.pdf"
           v-model:file-list="leanTaskList"
           name="leanTaskFile"
           list-type="picture-card"

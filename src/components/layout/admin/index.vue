@@ -19,16 +19,16 @@ const items = ref([
         label: '内容管理(教育局使用)',
         title: 'Contents',
     },
-    // {
-    //     key: 'DataUpdate',
-    //     icon: () => h(DatabaseOutlined),
-    //     label: '数据上传(教育局使用)',
-    //     title: 'DataUpdate',
-    // },
+    {
+        key: 'DataUpdate',
+        icon: () => h(DatabaseOutlined),
+        label: '数据上传(学校使用)',
+        title: 'DataUpdate',
+    },
     {
         key: 'DataGet',
         icon: () => h(DatabaseOutlined),
-        label: '数据同步(学校使用)',
+        label: '数据同步(教育局使用)',
         title: 'DataGet',
     },
 ]);

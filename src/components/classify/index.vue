@@ -156,12 +156,12 @@ const levels = ref(['学段', '年级', '学科', '版本', '册次']);
 </script>
 
 <template>
-    <div class="flex flex-col gap-4 p-4">
-        <div v-for="(level, i) in [2, 3, 4, 5, 6]" :key="level" class="flex gap-2">
-            <span class="flex items-center">
+    <div class="flex flex-col flex-wrap gap-4 p-4">
+        <div v-for="(level, i) in [2, 3, 4, 5, 6]" :key="level" class="flex gap-2 flex-wrap">
+            <span class="flex flex-wrap items-center">
                 {{ levels[i] }}:
             </span>
-            <a-button @click="handleSelect(level, node.id)" shape="round" v-for="node in getNodesAtLevel(level)"
+            <a-button class="min-w-[90px]" @click="handleSelect(level, node.id)" shape="round" v-for="node in getNodesAtLevel(level)"
                 :key="node.id" :type="selections[level] === node.id ? 'primary' : 'default'">{{ node.name }}</a-button>
         </div>
     </div>

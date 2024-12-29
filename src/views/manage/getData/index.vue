@@ -1,169 +1,110 @@
 <script setup>
-import { ref } from 'vue'
-import { SyncOutlined } from '@ant-design/icons-vue'
-import { getSqlFile, getUpdateZip, updateZip, updateSqlFile, getUpdateVersion } from '@/api/data';
+import {ref} from 'vue';
+import {message} from 'ant-design-vue';
+import {getSqlFile, getUpdateZip, getUpdateVersion,createAUpdate} from '@/api/data';
 
+const exporting = ref(false);
+const version = ref();
 
-const status = ref({
-    version: '',
-    lastSync: null,
-    isSyncing: false,
-    progress: 0
-})
+const handleExport = async () => {
+  // 将版本转为数字，自增1，然后转换为字符串
+  let newVersion = (parseFloat(version.value) + 1).toFixed(1);
 
-const { data, code } = await getUpdateVersion()
-if (code == 200) {
-    status.value.version = data;
-}
-if (window.localStorage.getItem('lastSync')) {
-    status.value.lastSync = window.localStorage.getItem('lastSync');
-}
-
-let fakeProgressInterval = null
-
-const startFakeProgress = (maxProgress = 95, interval = 1000) => {
-    return new Promise((resolve) => {
-        fakeProgressInterval = setInterval(() => {
-            if (status.value.progress >= maxProgress) {
-                clearInterval(fakeProgressInterval)
-                resolve()
-            } else {
-                const increment = (Math.random() * 5 + 2).toFixed(2)
-                status.value.progress = Math.min(maxProgress, parseFloat((status.value.progress + parseFloat(increment)).toFixed(2)))
-            }
-        }, interval)
-    })
-}
-
-const handleSync = async () => {
+// 调用函数并传递新的版本号
+  const { data, code } = await createAUpdate({ version: newVersion });
+  if(code === 200){
+    await getVersion();
+    exporting.value = true;
     try {
-        status.value.isSyncing = true
-        status.value.progress = 0
+      // 执行 SQL 文件导出
+      let response = await getSqlFile();
+      let blob = new Blob([response], {type: 'application/sql'});
+      let url = URL.createObjectURL(blob);
+      let a = document.createElement('a');
+      a.href = url;
+      a.download = 'export.sql';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-        startFakeProgress()
+      message.success('SQL文件导出成功！');
 
-        const sqlResponse = await getSqlFile();
-        if (sqlResponse) {
+      // 执行 ZIP 文件导出
+      response = await getUpdateZip();
+      blob = new Blob([response], { type: 'application/zip' });
+      url = URL.createObjectURL(blob);
+      a = document.createElement('a');
+      a.href = url;
+      a.download = 'export.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-            // 创建 Blob 对象并包装为 FormData
-            const sqlBlob = new Blob([sqlResponse], { type: 'text/plain;charset=utf-8' });
-            const sqlFormData = new FormData();
-            sqlFormData.append('sqlFile', sqlBlob, 'data.sql'); // 给文件命名
-
-            // 自动上传 SQL 文件
-            const uploadSqlResponse = await updateSqlFile(sqlFormData);
-            if (uploadSqlResponse && uploadSqlResponse.code === 200) {
-                console.log('SQL 文件上传成功');
-            } else {
-                throw new Error('SQL 文件上传失败');
-            }
-        } else {
-            throw new Error('获取 SQL 文件内容失败');
-        }
-
-        // 2. 获取 ZIP 文件并保存到本地
-        const zipResponse = await getUpdateZip({
-            responseType: 'blob',
-        });
-
-        if (zipResponse) {
-            // 创建 Blob 对象并包装为 FormData
-            const zipBlob = new Blob([zipResponse], { type: 'application/zip' });
-            const zipFormData = new FormData();
-            zipFormData.append('zipFile', zipBlob, 'update.zip'); // 给文件命名
-
-            // 自动上传 ZIP 文件
-            const uploadZipResponse = await updateZip(zipFormData);
-            if (uploadZipResponse && uploadZipResponse.code === 200) {
-                console.log('ZIP 文件上传成功');
-            } else {
-                throw new Error('ZIP 文件上传失败');
-            }
-        } else {
-            throw new Error('获取 ZIP 文件失败');
-        }
-
-        // const sqlResponse = await getSqlFile();
-        // if (sqlResponse) {
-        //     const sqlBlob = new Blob([sqlResponse], { type: 'text/plain;charset=utf-8' });
-        //     const sqlUrl = window.URL.createObjectURL(sqlBlob);
-        //     const sqlLink = document.createElement('a');
-        //     sqlLink.href = sqlUrl;
-        //     sqlLink.download = 'data.sql'; // 设置下载的文件名
-        //     sqlLink.click();
-        //     window.URL.revokeObjectURL(sqlUrl); // 释放 URL
-        // }
-        // const zipResponse = await getUpdateZip();
-
-        // if (zipResponse) {
-        //     // 创建 Blob 对象
-        //     const blob = new Blob([zipResponse.data], { type: 'application/zip' });
-        //     const url = window.URL.createObjectURL(blob);
-        //     const link = document.createElement('a');
-        //     link.href = url;
-        //     link.download = 'update.zip'; // 设置下载的文件名
-        //     link.click();
-        //     window.URL.revokeObjectURL(url); // 释放 URL
-        // }
-
-
-        status.value.progress = 100
-        const now = new Date();
-        now.setHours(now.getHours() + 8);
-        status.value.lastSync = now.toISOString().replace('T', ' ').slice(0, 19);
-        window.localStorage.setItem('lastSync', status.value.lastSync);
+      message.success('ZIP文件导出成功！');
     } catch (error) {
-        console.error('同步失败:', error)
+      console.error('Error exporting files:', error);
+      message.error('文件导出失败！');
     } finally {
-        if (fakeProgressInterval) clearInterval(fakeProgressInterval)
-        status.value.isSyncing = false
+      exporting.value = false;
     }
+  }
+};
+
+async function getVersion() {
+  const {data, code} = await getUpdateVersion()
+  console.log(data)
+  if (code == 200) {
+    version.value = data;
+  }
 }
+
+getVersion();
 </script>
 
 <template>
-    <a-card :bordered="false" class="data-sync-card">
-        <template #title>
-            <div class="flex items-center justify-between">
-                <span class="text-lg font-semibold">数据同步</span>
-                <a-button type="primary" shape="circle" :loading="status.isSyncing" @click="handleSync">
-                    <template #icon>
-                        <SyncOutlined />
-                    </template>
-                </a-button>
-            </div>
-        </template>
-        <div class="data-sync-content">
-            <a-descriptions :column="1">
-                <a-descriptions-item label="当前版本">
-                    {{ status.version }}
-                </a-descriptions-item>
-                <a-descriptions-item label="上次同步时间">
-                    {{ status.lastSync || '从未同步' }}
-                </a-descriptions-item>
-            </a-descriptions>
-            <a-progress v-if="status.isSyncing" :percent="status.progress" size="small" class="mt-4" />
-        </div>
-    </a-card>
-
+  <div class="container">
+    <h1 class="title">数据导出</h1>
+    <div class="flex justify-center items-center">
+      <a-card :loading="!version" title="文件导出" bordered class="text-center min-w-[300px]">
+        <p>当前版本: {{ version }}</p>
+        <a-button
+            class="mt-5"
+            type="primary"
+            :loading="exporting"
+            @click="handleExport"
+        >
+          {{ exporting ? '导出中...' : '创建新版本并导出当前版本（zip和sql）' }}
+        </a-button>
+      </a-card>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.data-sync-card {
-    margin: 24px;
-    min-height: 200px;
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
 }
 
-.data-sync-content {
-    padding: 0 12px;
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
-:deep(.ant-descriptions-item-label) {
-    color: rgba(0, 0, 0, 0.45);
-    min-width: 120px;
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
-:deep(.ant-descriptions-item-content) {
-    justify-content: flex-end;
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>

@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref, nextTick } from 'vue';
-import { getFile } from '@/api/preview';
+import {onMounted, ref, nextTick} from 'vue';
+import {getFile} from '@/api/preview';
 
 // pdf
 import VueOfficePdf from '@vue-office/pdf'
@@ -20,8 +20,6 @@ import VueOfficePptx from '@vue-office/pptx'
 const files = [
   'http://150.109.233.199/assets/1.doc',
   'http://150.109.233.199/assets/1.ppt',
-
-
 
 
   // 'http://150.109.233.199/assets/1.docx',
@@ -58,7 +56,7 @@ const loadFilePreview = async () => {
   // fileType.value = fileExtension ;
   fileType.value = props.fileType;
   const fileExtension = props.fileType;
-  console.log(fileType.value)
+  // console.log(fileType.value)
   if (fileExtension === 'pdf') {
   } else if (['ppt', 'pptx'].includes(fileExtension)) {
   } else if (['doc', 'docx'].includes(fileExtension)) {
@@ -66,13 +64,14 @@ const loadFilePreview = async () => {
   } else if (['txt'].includes(fileExtension)) {
     await renderTxt(props.fileUrl);
   } else if (['html'].includes(fileExtension)) {
+    await renderHtml(props.fileUrl);
   } else if (['mp4'].includes(fileExtension)) {
   } else {
     previewContent.value = '不支持的文件类型';
   }
 };
 
-
+// console.log(1111)
 
 // 渲染 TXT 文件
 const renderTxt = async (url) => {
@@ -81,8 +80,13 @@ const renderTxt = async (url) => {
   loading.value = false;
 };
 
+const renderHtml = async (url) => {
+  const response = await fetch(url);
+  previewContent.value = await response.text();
+  loading.value = false;
+};
+
 function renderedHandler() {
-  console.log()
   loading.value = false;
 }
 
@@ -91,25 +95,26 @@ onMounted(loadFilePreview);
 
 <template>
   <div class="preview">
-    <a-spin class="laoding" v-if="loading" />
-    <iframe @load="renderedHandler" v-if="fileType === 'html'" :src="props.fileUrl" class="w-[100%] h-[500px]" />
+    <a-spin class="laoding" v-if="loading"/>
+    <div v-if="fileType === 'html'"  v-html="previewContent" class="w-[100%] h-[500px]"/>
 
     <vue-office-pdf @rendered="renderedHandler" v-else-if="fileType === 'pdf'" :src="props.fileUrl"
-      class="h-[100%] w-[100%]" />
+                    class="h-[100%] w-[100%]"/>
 
     <vue-office-docx @rendered="renderedHandler" v-else-if="fileType === 'docx'" :src="props.fileUrl"
-      class="h-[100%] w-[100%]" />
+                     class="h-[100%] w-[100%]"/>
 
     <vue-office-pptx @rendered="renderedHandler" v-else-if="fileType === 'pptx'" :src="props.fileUrl"
-      class="h-[100%] w-[100%]" />
+                     class="h-[100%] w-[100%]"/>
 
 
     <vue-office-excel @rendered="renderedHandler" :options="{ xls: fileType === 'xls' }"
-      v-else-if="fileType === 'xlsx' || fileType === 'xls'" :src="props.fileUrl" class="h-[100%] w-[100%]" />
+                      v-else-if="fileType === 'xlsx' || fileType === 'xls'" :src="props.fileUrl"
+                      class="h-[100%] w-[100%]"/>
 
     <div v-else-if="fileType === 'mp4'" class="h0-[100%]">
       <video @canplay="renderedHandler" controls width="100%" class="h-[100%]">
-        <source :src="props.fileUrl" />
+        <source :src="props.fileUrl"/>
         您的浏览器不支持视频播放。
       </video>
     </div>
