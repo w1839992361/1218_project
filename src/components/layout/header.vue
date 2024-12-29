@@ -1,11 +1,14 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getAllTree } from '@/api/admin/content';
 import { Input } from 'ant-design-vue';
-import { SearchOutlined } from '@ant-design/icons-vue';
+import { SearchOutlined, DownOutlined } from '@ant-design/icons-vue';
 
 const navs = ref([]);
+const visibleItems = ref([]);
+const overflowItems = ref([]);
+const navRef = ref(null);
 
 async function fetchNavs() {
   const { data, code } = await getAllTree();
@@ -16,10 +19,40 @@ async function fetchNavs() {
       routeName: item.name === '课程教学' ? 'course' : 'subject'
     }));
     navs.value = [{ id: 0, name: "首页", routeName: 'home' }, ...items];
+    updateNavItems();
   }
 }
 
-fetchNavs();
+onMounted(() => {
+  fetchNavs();
+  window.addEventListener('resize', updateNavItems);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateNavItems);
+});
+
+function updateNavItems() {
+  if (!navRef.value) return;
+
+  const navWidth = navRef.value.offsetWidth;
+  let totalWidth = 0;
+  const visible = [];
+  const overflow = [];
+
+  navs.value.forEach((item, index) => {
+    const itemWidth = 100; // Approximate width of each item
+    if (totalWidth + itemWidth < navWidth - 150) { // Reserve space for "More" dropdown and search
+      visible.push(item);
+      totalWidth += itemWidth;
+    } else {
+      overflow.push(item);
+    }
+  });
+
+  visibleItems.value = visible;
+  overflowItems.value = overflow;
+}
 
 const router = useRouter();
 const route = useRoute();
@@ -38,39 +71,74 @@ function handleSearch() {
   console.log(keyword.value);
   // Implement your search logic here
 }
+
+const showOverflowMenu = ref(false);
+
+function toggleOverflowMenu() {
+  showOverflowMenu.value = !showOverflowMenu.value;
+}
 </script>
 
 <template>
-  <nav class="bg-white shadow-md">
+  <nav class="bg-white shadow-md" ref="navRef">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <div class="flex">
           <div class="flex-shrink-0 flex items-center">
             <!-- You can add your logo here -->
-<!--            <img class="h-8 w-auto" src="/your-logo.png" alt="Your Logo" />-->
+            <!-- <img class="h-8 w-auto" src="/your-logo.png" alt="Your Logo" /> -->
           </div>
           <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
             <a
-                v-for="item in navs"
-                :key="item.id"
-                :class="[
-                'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium',
+              v-for="item in visibleItems"
+              :key="item.id"
+              :class="[
+                'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer',
                 isActive(item.id)
                   ? 'border-blue-500 text-gray-900'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
               ]"
-                @click="navigateTo(item)"
+              @click="navigateTo(item)"
             >
               {{ item.name }}
             </a>
+            <div v-if="overflowItems.length > 0" class="relative">
+              <button
+                @click="toggleOverflowMenu"
+                class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+              >
+                更多 <DownOutlined class="ml-1" />
+              </button>
+              <div
+                v-if="showOverflowMenu"
+                class="absolute z-10 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+              >
+                <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                  <a
+                    v-for="item in overflowItems"
+                    :key="item.id"
+                    :class="[
+                      'block px-4 py-2 text-sm  cursor-pointer',
+                      isActive(item.id)
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ]"
+                    @click="navigateTo(item)"
+                    role="menuitem"
+                  >
+                    {{ item.name }}
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="flex items-center">
           <a-input-search
-              v-model:value="keyword"
-              placeholder="请输入关键字"
-              style="width: 200px"
-              @search="handleSearch"
+            v-model:value="keyword"
+            placeholder="请输入关键字"
+            style="width: 200px"
+            @search="handleSearch"
           >
             <template #enterButton>
               <SearchOutlined />
@@ -84,15 +152,16 @@ function handleSearch() {
     <div class="sm:hidden" id="mobile-menu">
       <div class="pt-2 pb-3 space-y-1">
         <a
-            v-for="item in navs"
-            :key="item.id"
-            :class="[
-            'block pl-3 pr-4 py-2 border-l-4 text-base font-medium',
+          v-for="item in navs"
+          :key="item.id"
+          class="cursor-pointer"
+          :class="[
+            'block  pl-3 pr-4 py-2 border-l-4 text-base font-medium',
             isActive(item.id)
               ? 'bg-blue-50 border-blue-500 text-blue-700'
               : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
           ]"
-            @click="navigateTo(item)"
+          @click="navigateTo(item)"
         >
           {{ item.name }}
         </a>
