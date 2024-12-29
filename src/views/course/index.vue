@@ -23,6 +23,7 @@ const router = useRouter();
 const route = useRoute();
 
 const selectedKeys = ref(["course"]);
+
 const courseTitle = ref([
   // {
   //     name: '学科课程',
@@ -38,16 +39,18 @@ const courseTitle = ref([
 const currentKeys = ref(1);
 
 onMounted(async () => {
-  const { data, code } = await getTagsByParentId(route.query.course);
+  const { data, code } = await getTagsByParentId(route.query.id);
   courseTitle.value = data.map((item) => {
     return {
       key: item.name,
       ...item,
     };
   });
-  selectedKeys.value = [courseTitle.value[0].name];
+  let courseName = route.query?.courseName || courseTitle.value[0].name;
+  selectedKeys.value = [courseName];
   if (code === 200) {
-    getClassifyData(courseTitle.value[0].id);
+    let id = courseTitle.value.find(i=>i.key === courseName)?.id
+    getClassifyData(id);
   }
 });
 
@@ -58,12 +61,10 @@ function download(item) {
 }
 
 function handleAllClick(item) {
-  message.success("all!");
   router.push({ name: "courseDetails" });
 }
 
 function handleSingleClick(info) {
-  message.success("single!");
   router.push({ name: "courseDetails" ,query:{...info}});
 }
 
@@ -71,6 +72,8 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + "/api/covers/stream/";
 
 const selectedId = ref();
+
+
 const currentClassify = ref();
 const classifyData = ref([]);
 const videos = ref();
@@ -79,10 +82,10 @@ const pageLoading = ref(true);
 const classLoading = ref(true);
 const isLoading = ref(true);
 async function getClassifyData(id) {
-
   const { data, code } = await getTagsById(id);
   if (code === 200) {
     classifyData.value = data[0].children;
+    selectedId.value = (+route?.query?.courseClass) ?? null;
     classLoading.value = false;
   }
 }
@@ -90,13 +93,15 @@ async function getClassifyData(id) {
 async function getPages(id) {
   const { data, code } = await getTagsById(id);
   if (code === 200 && data.length) {
-    sections.value = data[0].children;
-    allresourceUuid.value = sections.value.map((unit) => ({
-      id: unit.id,
-      name: unit.name,
-      resourceUuids: extractResourceUuids(unit.children),
-    }));
-    pageLoading.value = false;
+    sections.value = data[0]?.children || [];
+    if (sections.value.length){
+      allresourceUuid.value = sections.value.map((unit) => ({
+        id: unit.id,
+        name: unit.name,
+        resourceUuids: extractResourceUuids(unit.children),
+      }));
+      pageLoading.value = false;
+    }
   }
 }
 function extractResourceUuids(nodes) {
@@ -119,11 +124,15 @@ function handleClassifyChange(item) {
   sections.value = [];
   pageLoading.value = true;
   currentClassify.value = item;
+  console.log(item)
   item?.id && getPages(item?.id);
+  router.push({name:'course',query:{id:route.query.id,courseClass: item?.id,courseName:route.query.courseName}})
 }
 
 function handleMenuChange(item) {
+  // selectedId.value = null;
   classLoading.value = true;
+  router.push({name:'course',query:{id:route.query.id,courseName:item.key}})
   let id = courseTitle.value.find((c) => c.name === item.key)?.id;
   id && getClassifyData(id);
 }
@@ -176,6 +185,7 @@ function getVideosByUid(uid) {
 </script>
 
 <template>
+
   <a-menu
     :inlineCollapsed="false"
     @click="handleMenuChange"
@@ -201,7 +211,7 @@ function getVideosByUid(uid) {
   </a-card>
 
   <template v-if="selectedKeys[0] === '学科课程'">
-    <a-card :loading="pageLoading" title="目录" class="pages">
+    <a-card v-if="sections.length" :loading="pageLoading" title="目录" class="pages">
       <a-collapse
         v-model:activeKey="currentKeys"
         :bordered="false"
@@ -274,10 +284,12 @@ function getVideosByUid(uid) {
         </a-collapse-panel>
       </a-collapse>
     </a-card>
+    <a-empty v-else   :description="null" />
+
   </template>
 
   <template v-if="selectedKeys[0] === '拓展课程'">
-    <a-card :loading="pageLoading" class="pages min-h-[500px]">
+    <a-card v-if="sections.length" :loading="pageLoading" class="pages min-h-[500px]">
       <a-row :gutter="16" class=" min-h-[500px]">
         <a-col :span="6" @click="handleExtensions(item)" v-for="item in sections">
           <a-card class="page" hoverable>
@@ -303,6 +315,8 @@ function getVideosByUid(uid) {
         />
       </div>
     </a-card>
+    <a-empty v-else   :description="null" />
+
   </template>
 </template>
 

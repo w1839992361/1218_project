@@ -20,16 +20,16 @@ const items = ref([
         title: 'Contents',
     },
     {
-        key: 'DataUpdate',
-        icon: () => h(DatabaseOutlined),
-        label: '数据上传(学校使用)',
-        title: 'DataUpdate',
-    },
-    {
         key: 'DataGet',
         icon: () => h(DatabaseOutlined),
         label: '数据同步(教育局使用)',
         title: 'DataGet',
+    },
+    {
+      key: 'DataUpdate',
+      icon: () => h(DatabaseOutlined),
+      label: '数据上传(学校使用)',
+      title: 'DataUpdate',
     },
 ]);
 

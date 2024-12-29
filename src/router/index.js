@@ -19,7 +19,7 @@ const router = createRouter({
           component: () => import('@/views/home/index.vue'),
         },
         {
-          path: 'course',
+          path: '/course',
           name: 'course',
           meta: { title: '课程教学' },
           component: () => import('@/views/course/index.vue'),
@@ -41,6 +41,12 @@ const router = createRouter({
           name: 'subject',
           meta: { title: '专题教育' },
           component: () => import('@/views/subject/index.vue'),
+        },
+        {
+          path: 'subject/subjectDetail',
+          name: 'SubjectDetail',
+          meta: { title: '拓展栏目通用' },
+          component: () => import('@/views/subject/detail.vue'),
         },
       ],
     },

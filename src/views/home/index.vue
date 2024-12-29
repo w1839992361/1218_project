@@ -14,11 +14,9 @@ function handleBannerClick(item) {
 
 
 function gotoUrl(name, query) {
-    router.push({
-        name,
-        query
-    })
+  router.push({ name,query });
 }
+
 
 // getList()
 
@@ -128,7 +126,10 @@ function handleSubjectClick(item) {
 
 // 课程教学点击
 function handleCourseClick(item) {
-    gotoUrl('course', { id: 1 })
+  // gotoUrl('course', { courseClass: 15,course:1,courseName:'学科课程'})
+  // gotoUrl('course', { id: 1,courseClass: 16, courseName: '学科课程' });
+  // gotoUrl('course', { id: 1,courseClass: 15, courseName: '学科课程' });
+  gotoUrl('course', { id: 1,courseClass: 23, courseName: '拓展课程' });
 }
 
 function handlePracticeClick(item) {

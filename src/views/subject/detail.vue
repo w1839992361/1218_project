@@ -63,37 +63,6 @@ function handleDownClick(item) {
 </script>
 
 <template>
-  <a-row :gutter="16">
-    <!-- <a-col :span="10"> -->
-    <!-- <breadcrumb :navs="[]" /> -->
-    <!-- </a-col> -->
-    <a-col :span="24">
-      <a-row :gutter="16">
-        <h1 class="text-2xl">文心实践</h1>
-      </a-row>
-      <a-row :gutter="16" class="mt-2">
-        <a-col :span="4" >
-          课程负责人：wangcaibin
-        </a-col>
-        <a-col :span="4" >
-          学段：wangcaibin
-        </a-col>
-        <a-col :span="4" >
-          年级：wangcaibin
-        </a-col>
-        <a-col :span="4" >
-          学科：wangcaibin
-        </a-col>
-        <a-col :span="4" >
-          版本：wangcaibin
-        </a-col>
-        <a-col :span="4" >
-          册次：wangcaibin
-        </a-col>
-      </a-row>
-    </a-col>
-  </a-row>
-
   <a-row :gutter="16" class="mt-10">
     <a-col :span="16">
       <div class="warp h-[500px] flex items-center justify-center">

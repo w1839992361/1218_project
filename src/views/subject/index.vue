@@ -3,28 +3,33 @@ import breadcrumb from "@/components/breadcrumb/index.vue";
 import {ref,watch} from "vue";
 import {RightOutlined} from "@ant-design/icons-vue";
 import {message} from "ant-design-vue";
-import {useRoute} from "vue-router";
-import {getTagsByParentId, getTagsByLevel, getTagsById} from "@/api/other";
+import { useRouter, useRoute } from "vue-router";
+
+import { getTagsById} from "@/api/other";
+// import {getDocsInfo, getVideoInfo, getVideoUUID} from "@/api/admin/content";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + "/api/covers/stream/";
 
 const route = useRoute();
+const router = useRouter();
 
 const subjects = ref([]);
 
-function handlePageClick(item) {
-  message.success("success!");
+function handlePageClick(info) {
+  router.push({ name: "SubjectDetail" ,query:{...info}});
 }
 
 function handlePageBannerClick(item) {
   message.success("success!");
 }
 
+
+
 async function getList() {
-  const {data, code} = await getTagsByParentId(route.query.subject);
+  const {data, code} = await getTagsById(route.query.id);
   if (code === 200) {
-    subjects.value = data;
+    subjects.value = data[0]?.children ?? [];
     console.log(data)
   }
 }
@@ -72,28 +77,28 @@ getList();
               alt=""
           />
         </a-col>
-        <a-col :span="12" class="cursor-pointer" @click="handlePageClick(1)">
-          <a-row @click="" :gutter="16" v-for="item in 3">
+        <a-col :span="12" class="cursor-pointer" >
+          <a-row :gutter="16" v-for="child in item.children" :key="child.id" @click="handlePageClick(child)">
             <a-col :span="8">
               <img
-                  src="https://mxjkoss.oss-cn-hangzhou.aliyuncs.com/coursezjer/2024/5/30/VNe1717057447431.jpg?x-oss-process=image/resize,m_fill,w_285,h_160"
+                  alt="preview"
+                  :src="imgUrl+child.coverUuid"
                   class="w-[100%] max-h-[140px]  mb-2"
               />
             </a-col>
             <a-col :span="12">
               <a-card-meta
-                  title="Europe Street beatEurope Street beatEurope Street beatEurope Street beat"
+                  :title="child.name"
               >
                 <template #description>
                   <div class="description">
-                    www.instagram.Europe Street beatEurope Street beatEurope Street
-                    beatEurope Street beatEurope Street beatEurope Street beat
+                    {{item.description}}
                   </div>
                 </template>
               </a-card-meta>
 
               <span style="display: block; margin-top: 10px; color: #ccc"
-              >浏览量: {{ 11111 }}</span
+              >浏览量: {{ child.viewNum || 0 }}</span
               >
             </a-col>
           </a-row>

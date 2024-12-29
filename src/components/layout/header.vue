@@ -1,114 +1,106 @@
 <script setup>
-import { ref, watch } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import { onMounted } from "vue";
+import { ref, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { getAllTree } from '@/api/admin/content';
+import { Input } from 'ant-design-vue';
+import { SearchOutlined } from '@ant-design/icons-vue';
 
-const current = ref(["home"]);
+const navs = ref([]);
 
-const navs = ref([
-  {
-    key: "home",
-    name: "首页",
-  },
-]);
-
-
-async function getHeader() {
+async function fetchNavs() {
   const { data, code } = await getAllTree();
-  if (code !== 200) return;
-  let keys = {
-    '课程教学': 'course',
-  };
-  let arr = data.map(item => {
-    return {
-      key: keys[item.name] ? (keys[item.name] + '?course=' + item.id) : ('subject?subject=' + item.id),
-      ...item
-    }
-  });
-  navs.value = navs.value.concat(arr);
-
-  const matchedNav = navs.value.find((nav) => route.fullPath.includes(nav.key));
-  if (matchedNav) {
-    console.log(matchedNav)
-    current.value = [matchedNav.key];
-    route.meta.title = matchedNav.name; // 更新 meta.title
+  if (code === 200) {
+    const items = data.map(item => ({
+      id: item.id,
+      name: item.name,
+      routeName: item.name === '课程教学' ? 'course' : 'subject'
+    }));
+    navs.value = [{ id: 0, name: "首页", routeName: 'home' }, ...items];
   }
-
 }
 
-getHeader();
-
-const keyword = ref('');
+fetchNavs();
 
 const router = useRouter();
 const route = useRoute();
 
-watch(
-  () => route.name,
-  (newName) => {
-    const matchedNav = navs.value.find((nav) => nav.key === newName);
+const currentId = computed(() => parseInt(route.query.id || 0));
 
-    if (matchedNav) {
-      current.value = [matchedNav.key];
-    }
-  }
-);
+const isActive = (navId) => navId === currentId.value;
 
-onMounted(() => {
-  const matchedNav = navs.value.find((nav) => route.fullPath.includes(nav.key));
-  current.value = matchedNav ? [matchedNav.key] : [];
-});
-
-function selectedKeys({ key }) {
-  let [routeName, queryString] = key.split('?');
-  let query = queryString
-    ? Object.fromEntries(new URLSearchParams(queryString))
-    : {};
-  router.push({ name: routeName, query });
+function navigateTo(nav) {
+  router.push({ name: nav.routeName, query: { id: nav.id }});
 }
+
+const keyword = ref('');
 
 function handleSearch() {
-  console.log(keyword.value)
+  console.log(keyword.value);
+  // Implement your search logic here
 }
-
 </script>
 
 <template>
-  <div class="warp">
-    <div class="top">
-      <a-row :gutter="16" class="w-[100%]">
-        <a-col :span="18">
-          <a-menu @click="selectedKeys" class="w-[100%]" v-model:selectedKeys="current" mode="horizontal">
-            <a-menu-item :key="item.key" v-for="item in navs">
-              <h3>{{ item.name }}</h3>
-            </a-menu-item>
-          </a-menu>
-
-        </a-col>
-
-        <a-col :span="5" class="flex items-center">
-          <a-input-search v-model:value="keyword" placeholder="请输入关键字" enter-button @search="handleSearch" />
-        </a-col>
-      </a-row>
+  <nav class="bg-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex">
+          <div class="flex-shrink-0 flex items-center">
+            <!-- You can add your logo here -->
+<!--            <img class="h-8 w-auto" src="/your-logo.png" alt="Your Logo" />-->
+          </div>
+          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <a
+                v-for="item in navs"
+                :key="item.id"
+                :class="[
+                'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium',
+                isActive(item.id)
+                  ? 'border-blue-500 text-gray-900'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              ]"
+                @click="navigateTo(item)"
+            >
+              {{ item.name }}
+            </a>
+          </div>
+        </div>
+        <div class="flex items-center">
+          <a-input-search
+              v-model:value="keyword"
+              placeholder="请输入关键字"
+              style="width: 200px"
+              @search="handleSearch"
+          >
+            <template #enterButton>
+              <SearchOutlined />
+            </template>
+          </a-input-search>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- Mobile menu, show/hide based on menu state. -->
+    <div class="sm:hidden" id="mobile-menu">
+      <div class="pt-2 pb-3 space-y-1">
+        <a
+            v-for="item in navs"
+            :key="item.id"
+            :class="[
+            'block pl-3 pr-4 py-2 border-l-4 text-base font-medium',
+            isActive(item.id)
+              ? 'bg-blue-50 border-blue-500 text-blue-700'
+              : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+          ]"
+            @click="navigateTo(item)"
+        >
+          {{ item.name }}
+        </a>
+      </div>
+    </div>
+  </nav>
 </template>
 
 <style scoped>
-.warp {
-  width: 100%;
-  background: #fff;
-}
-
-.top {
-  width: 100%;
-  height: 50px;
-  background-color: #fff;
-  position: relative;
-  display: flex;
-  align-items: end;
-  width: 1368px;
-  margin: 0 auto;
-}
+/* Any additional custom styles can be added here */
 </style>

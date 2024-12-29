@@ -81,7 +81,6 @@ function handleResClick(item) {
   }
   activeId.value = item.id;
   refreshKey.value = Date.now();
-  message.success("all!");
 }
 
 function handleDownClick(item) {
@@ -242,6 +241,9 @@ function handleCopy() {
                 <DownloadOutlined @click.stop="handleDownClick(item)" class="download-icon"/>
               </div>
             </div>
+          </a-col>
+          <a-col :span="24" v-if="allVideos.length ==0 && allDocs.length ==0">
+            <a-empty   :description="null" />
           </a-col>
         </a-row>
       </a-card>
