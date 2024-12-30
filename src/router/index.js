@@ -20,6 +20,12 @@ const router = createRouter({
           component: () => import('@/views/home/index.vue'),
         },
         {
+          path: 'search',
+          name: 'search',
+          meta: { title: '搜索' },
+          component: () => import('@/views/search/index.vue'),
+        },
+        {
           path: '/course',
           name: 'course',
           meta: { title: '课程教学' },

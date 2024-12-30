@@ -70,8 +70,8 @@ function navigateTo(nav) {
 
 const keyword = ref('');
 
-function handleSearch() {
-  console.log(keyword.value);
+function handleSearch(keyword) {
+ router.push({name:'search',query:{keyword}})
   // Implement your search logic here
 }
 
@@ -141,7 +141,7 @@ function toggleMobileMenu() {
             </div>
           </div>
         </div>
-        <div class="flex items-center">
+        <div class="flex items-center" v-show="route.name !=='search'">
           <div class="hidden md:block">
             <a-input-search
               v-model:value="keyword"
