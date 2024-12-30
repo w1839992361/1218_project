@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 dotenv.config(); // 加载 .env 文件
 // https://vite.dev/config/
 export default defineConfig({
-  base:process.env.NODE_ENV === "production" ? "./" : "/",
+  base:process.env.NODE_ENV === "production" ? "/" : "/",
   plugins: [
     vue(),
     vueDevTools(),
