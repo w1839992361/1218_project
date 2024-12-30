@@ -3,12 +3,13 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getAllTree } from '@/api/admin/content';
 import { Input } from 'ant-design-vue';
-import { SearchOutlined, DownOutlined } from '@ant-design/icons-vue';
+import { SearchOutlined, DownOutlined, MenuOutlined } from '@ant-design/icons-vue';
 
 const navs = ref([]);
 const visibleItems = ref([]);
 const overflowItems = ref([]);
 const navRef = ref(null);
+const mobileMenuOpen = ref(false);
 
 async function fetchNavs() {
   const { data, code } = await getAllTree();
@@ -42,7 +43,7 @@ function updateNavItems() {
 
   navs.value.forEach((item, index) => {
     const itemWidth = 100; // Approximate width of each item
-    if (totalWidth + itemWidth < navWidth - 150) { // Reserve space for "More" dropdown and search
+    if (totalWidth + itemWidth < navWidth - 200) { // Reserve space for "More" dropdown and search
       visible.push(item);
       totalWidth += itemWidth;
     } else {
@@ -63,6 +64,8 @@ const isActive = (navId) => navId === currentId.value;
 
 function navigateTo(nav) {
   router.push({ name: nav.routeName, query: { id: nav.id }});
+  showOverflowMenu.value = false;
+  mobileMenuOpen.value = false;
 }
 
 const keyword = ref('');
@@ -77,6 +80,10 @@ const showOverflowMenu = ref(false);
 function toggleOverflowMenu() {
   showOverflowMenu.value = !showOverflowMenu.value;
 }
+
+function toggleMobileMenu() {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+}
 </script>
 
 <template>
@@ -88,15 +95,15 @@ function toggleOverflowMenu() {
             <!-- You can add your logo here -->
             <!-- <img class="h-8 w-auto" src="/your-logo.png" alt="Your Logo" /> -->
           </div>
-          <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+          <div class="hidden md:ml-6 md:flex md:space-x-4">
             <a
               v-for="item in visibleItems"
               :key="item.id"
               :class="[
-                'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium cursor-pointer',
+                'inline-flex items-center px-3 py-2 cursor-pointer  text-sm font-medium transition-colors duration-150 ease-in-out border-b-2',
                 isActive(item.id)
-                  ? 'border-blue-500 text-gray-900'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-700 hover:bg-blue-50 hover:text-blue-600'
               ]"
               @click="navigateTo(item)"
             >
@@ -105,9 +112,10 @@ function toggleOverflowMenu() {
             <div v-if="overflowItems.length > 0" class="relative">
               <button
                 @click="toggleOverflowMenu"
-                class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                class="inline-flex min-w-[90px] h-[100%] items-center px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-150 ease-in-out"
               >
-                更多 <DownOutlined class="ml-1" />
+                更多
+                <DownOutlined class="ml-1" />
               </button>
               <div
                 v-if="showOverflowMenu"
@@ -118,10 +126,10 @@ function toggleOverflowMenu() {
                     v-for="item in overflowItems"
                     :key="item.id"
                     :class="[
-                      'block px-4 py-2 text-sm  cursor-pointer',
+                      'inline-block w-[100%] text-center items-center cursor-pointer px-3 py-2 text-sm font-medium transition-colors duration-150 ease-in-out border-b-2',
                       isActive(item.id)
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-700 hover:bg-blue-50 hover:text-blue-600'
                     ]"
                     @click="navigateTo(item)"
                     role="menuitem"
@@ -134,42 +142,67 @@ function toggleOverflowMenu() {
           </div>
         </div>
         <div class="flex items-center">
-          <a-input-search
-            v-model:value="keyword"
-            placeholder="请输入关键字"
-            style="width: 200px"
-            @search="handleSearch"
+          <div class="hidden md:block">
+            <a-input-search
+              v-model:value="keyword"
+              placeholder="请输入关键字"
+              class="w-64"
+              @search="handleSearch"
+            >
+              <template #enterButton>
+                <SearchOutlined />
+              </template>
+            </a-input-search>
+          </div>
+          <button
+            @click="toggleMobileMenu"
+            class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-500 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
           >
-            <template #enterButton>
-              <SearchOutlined />
-            </template>
-          </a-input-search>
+            <MenuOutlined class="h-6 w-6" />
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- Mobile menu, show/hide based on menu state. -->
-    <div class="sm:hidden" id="mobile-menu">
-      <div class="pt-2 pb-3 space-y-1">
+    <!-- Mobile menu -->
+    <div
+      :class="['md:hidden', mobileMenuOpen ? 'block' : 'hidden']"
+      id="mobile-menu"
+    >
+      <div class="px-2 pt-2 pb-3 space-y-1">
         <a
           v-for="item in navs"
           :key="item.id"
-          class="cursor-pointer"
           :class="[
-            'block  pl-3 pr-4 py-2 border-l-4 text-base font-medium',
+            'block px-3 py-2 rounded-md text-base font-medium cursor-pointer transition-colors duration-150 ease-in-out',
             isActive(item.id)
-              ? 'bg-blue-50 border-blue-500 text-blue-700'
-              : 'border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700'
+              ? 'bg-blue-500 text-white'
+              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
           ]"
           @click="navigateTo(item)"
         >
           {{ item.name }}
         </a>
       </div>
+      <div class="px-2 pt-2 pb-3">
+        <a-input-search
+          v-model:value="keyword"
+          placeholder="请输入关键字"
+          class="w-full"
+          @search="handleSearch"
+        >
+          <template #enterButton>
+            <SearchOutlined />
+          </template>
+        </a-input-search>
+      </div>
     </div>
   </nav>
 </template>
 
 <style scoped>
-/* Any additional custom styles can be added here */
+/* Prevent text wrapping */
+.md\:flex > a {
+  white-space: nowrap;
+}
 </style>
