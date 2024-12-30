@@ -4,19 +4,8 @@ import { useRouter, useRoute } from "vue-router";
 import { PlayCircleOutlined } from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 import { getTagsByParentId, getTagsByLevel, getTagsById } from "@/api/other";
-// import {
-//   getAllTree,
-//   addTree,
-//   delTree,
-//   uploadCover,
-//   updateTree,
-//   uploadVideo,
 
-//   getDocsInfo,
-//   uploadDocs,
-// } from "@/api/admin/content";
 import { getAllTree, getVideoUUID, getVideoInfo } from "@/api/admin/content";
-import { getPreview } from "@/api/preview";
 import Classify from "@/components/classify/index.vue";
 
 const router = useRouter();
@@ -25,16 +14,7 @@ const route = useRoute();
 const selectedKeys = ref(["course"]);
 
 const courseTitle = ref([
-  // {
-  //     name: '学科课程',
-  //     key: 'course',
-  //     src: new URL('@/assets/images/course/hat.png', import.meta.url).href
-  // },
-  // {
-  //     name: '拓展课程',
-  //     key: 'extensions',
-  //     src: new URL('@/assets/images/course/dashboard.png', import.meta.url).href
-  // }
+
 ]);
 const currentKeys = ref(1);
 
@@ -58,10 +38,6 @@ const sections = ref([]);
 
 function download(item) {
   message.success("success!");
-}
-
-function handleAllClick(item) {
-  router.push({ name: "courseDetails" });
 }
 
 function handleSingleClick(info) {
