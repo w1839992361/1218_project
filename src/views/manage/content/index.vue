@@ -12,6 +12,7 @@ import {
   getVideoInfo,
   uploadDocs,
 } from "@/api/admin/content";
+import {getTagInfoById} from "@/api/other";
 import { message } from "ant-design-vue";
 import { UploadOutlined } from "@ant-design/icons-vue";
 import { PlusOutlined, LoadingOutlined } from "@ant-design/icons-vue";
@@ -62,6 +63,10 @@ const addResFormRules = {
 };
 const onSubmit = () => {
   addResFormRef.value.validate().then(async () => {
+   
+    const {data} = await getTagInfoById(addResForm.parentId);
+    const p_code = data?.code || '';
+    addResForm.code = p_code + addResForm.code;
     const { code } = await addTree(toRaw(addResForm));
     if (code == 200) {
       message.success("添加成功!");

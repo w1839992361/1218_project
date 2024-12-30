@@ -20,3 +20,9 @@ export function getTagsById(id){
     method: 'get'
   })
 }
+export function getTagInfoById(id){
+  return request({
+    url: '/api/teriTag/info/'+id,
+    method: 'get'
+  })
+}

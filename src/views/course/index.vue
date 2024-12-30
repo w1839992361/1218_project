@@ -185,7 +185,6 @@ function getVideosByUid(uid) {
 </script>
 
 <template>
-
   <a-menu
     :inlineCollapsed="false"
     @click="handleMenuChange"
