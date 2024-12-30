@@ -13,9 +13,7 @@ const route = useRoute();
 
 const selectedKeys = ref(["course"]);
 
-const courseTitle = ref([
-
-]);
+const courseTitle = ref([]);
 const currentKeys = ref(1);
 
 onMounted(async () => {
