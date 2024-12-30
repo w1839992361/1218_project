@@ -1,7 +1,6 @@
 <script setup>
-import { ref, onMounted, h } from 'vue'
+import { ref, onMounted} from 'vue'
 import { SearchOutlined } from '@ant-design/icons-vue'
-import { Select as aSelect, Input as aInput, Tabs as aTabs, TabPane as aTabPane, Pagination as aPagination, Spin as aSpin, message } from 'ant-design-vue'
 import { searchVideo } from '@/api/search'
 import { useRouter, useRoute } from 'vue-router';
 
@@ -153,10 +152,10 @@ onMounted(() => {
         </div>
 
         <!-- Pagination -->
-        <div class="flex justify-between items-center mt-6">
-          <span class="text-sm text-gray-500">
+        <div class="flex justify-end items-center mt-6">
+          <!-- <span class="text-sm text-gray-500">
             共 {{ pagination.total }} 条
-          </span>
+          </span> -->
           <a-pagination
             v-model:current="pagination.current"
             :total="pagination.total"
