@@ -1,6 +1,5 @@
 <script setup>
-import {onMounted, ref, nextTick} from 'vue';
-import {getFile} from '@/api/preview';
+import {onMounted, ref} from 'vue';
 
 // pdf
 import VueOfficePdf from '@vue-office/pdf'
@@ -13,37 +12,28 @@ import '@vue-office/excel/lib/index.css'
 import VueOfficeDocx from '@vue-office/docx'
 import '@vue-office/docx/lib/index.css'
 
-
 // pptx
 import VueOfficePptx from '@vue-office/pptx'
 
-const files = [
-  'http://150.109.233.199/assets/1.doc',
-  'http://150.109.233.199/assets/1.ppt',
-
-
-  // 'http://150.109.233.199/assets/1.docx',
-  // 'http://150.109.233.199/assets/1.pptx',
-  // 'http://150.109.233.199/assets/1.xlsx',
-  // 'http://150.109.233.199/assets/1.xls',
-  // 'http://150.109.233.199/assets/1.mp4',
-  // 'http://150.109.233.199/assets/1.html',
-  // 'http://150.109.233.199/assets/1.txt',
-  // 'http://150.109.233.199/assets/1.pdf',
+const spFiles = [
+   '.docx',
+   '.pptx',
+   '.xlsx',
+   '.xls',
+   '.mp4',
+   '.html',
+   '.txt',
+   '.pdf',
 ];
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const props = defineProps({
   fileUrl: {
     type: String,
-    // default: baseUrl + '/api/videos/stream/427f9fd6-61b5-46a7-81b4-8698ba3a7633' // video
-    default: '/api/docs/stream/ppt/497cc880-e1a5-45d5-80ba-d6ecc67ca448' // video
+    required: true,
   },
   fileType: {
     type: String,
     required: true,
-    default: 'pptx'
   }
 });
 
@@ -51,12 +41,9 @@ const fileType = ref('');
 const previewContent = ref('');
 const loading = ref(true);
 const loadFilePreview = async () => {
-
-  // const fileExtension = props.fileUrl.split('.').pop().toLowerCase();
-  // fileType.value = fileExtension ;
   fileType.value = props.fileType;
   const fileExtension = props.fileType;
-  // console.log(fileType.value)
+
   if (fileExtension === 'pdf') {
   } else if (['ppt', 'pptx'].includes(fileExtension)) {
   } else if (['doc', 'docx'].includes(fileExtension)) {
@@ -71,7 +58,6 @@ const loadFilePreview = async () => {
   }
 };
 
-// console.log(1111)
 
 // 渲染 TXT 文件
 const renderTxt = async (url) => {

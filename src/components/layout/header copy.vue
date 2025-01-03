@@ -89,7 +89,7 @@ function handleLogout() {
   isLogin.value = false;
   message.success('退出成功!');
   removeToken();
-  router.push('/');
+  router.push({ name: 'Home' });
 }
 </script>
 

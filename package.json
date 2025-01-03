@@ -15,7 +15,6 @@
     "@vue-office/pptx": "^0.0.6",
     "ant-design-vue": "^4.0.0-rc.6",
     "axios": "^1.7.9",
-    "dotenv": "^16.4.7",
     "file-saver": "^2.0.5",
     "js-cookie": "^3.0.5",
     "jszip": "^3.10.1",

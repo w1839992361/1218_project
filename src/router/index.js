@@ -1,9 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory,createWebHashHistory } from 'vue-router'
 import Layout from '../components/layout/index.vue';
 import AdminLayout from '../components/layout/admin/index.vue';
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  // history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
@@ -17,6 +18,12 @@ const router = createRouter({
           name: 'home',
           meta: { title: '首页' },
           component: () => import('@/views/home/index.vue'),
+        },
+        {
+          path: 'search',
+          name: 'search',
+          meta: { title: '搜索' },
+          component: () => import('@/views/search/index.vue'),
         },
         {
           path: '/course',
