@@ -5,8 +5,13 @@ import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 import { setToken } from '@/utils/index';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user';
+const userStore = useUserStore();
+
 const router = useRouter();
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+
 
 const loginFormRef = ref(null);
 const loginForm = reactive({
@@ -68,6 +73,9 @@ const submit = () => {
             const { code, data } = await login(toRaw(loginForm));
             if (code === 200) {
                 setToken(data);
+                // 示例用法
+                userStore.setUserInfo(data);
+                userStore.setToken(data);
                 message.success('登录成功!');
                 resetForm();
                 router.push('/');

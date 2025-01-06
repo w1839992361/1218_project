@@ -1,15 +1,23 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getAllTree } from '@/api/admin/content';
-import { Input } from 'ant-design-vue';
-import { SearchOutlined, DownOutlined, MenuOutlined } from '@ant-design/icons-vue';
+import { Input, Dropdown, Menu } from 'ant-design-vue';
+import { SearchOutlined, DownOutlined, MenuOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons-vue';
 
 const navs = ref([]);
 const visibleItems = ref([]);
 const overflowItems = ref([]);
 const navRef = ref(null);
 const mobileMenuOpen = ref(false);
+
+import { useUserStore } from '@/stores/user';
+const userStore = useUserStore();
+
+// 使用 computed 确保 isAuthenticated 是响应式的
+const isAuthenticated = computed(() => userStore.isAuthenticated);
+
+const user = ref({ username: '' });
 
 async function fetchNavs() {
   const { data, code } = await getAllTree();
@@ -27,6 +35,13 @@ async function fetchNavs() {
 onMounted(() => {
   fetchNavs();
   window.addEventListener('resize', updateNavItems);
+
+  // 监听用户认证状态
+  watchEffect(() => {
+    if (!isAuthenticated.value) {
+      router.push({ name: 'home' });
+    }
+  });
 });
 
 onUnmounted(() => {
@@ -42,8 +57,8 @@ function updateNavItems() {
   const overflow = [];
 
   navs.value.forEach((item, index) => {
-    const itemWidth = 100; // Approximate width of each item
-    if (totalWidth + itemWidth < navWidth - 200) { // Reserve space for "More" dropdown and search
+    const itemWidth = 100;
+    if (totalWidth + itemWidth < navWidth - 200) {
       visible.push(item);
       totalWidth += itemWidth;
     } else {
@@ -71,8 +86,7 @@ function navigateTo(nav) {
 const keyword = ref('');
 
 function handleSearch(keyword) {
- router.push({name:'search',query:{keyword}})
-  // Implement your search logic here
+  router.push({name:'search',query:{keyword}})
 }
 
 const showOverflowMenu = ref(false);
@@ -84,7 +98,18 @@ function toggleOverflowMenu() {
 function toggleMobileMenu() {
   mobileMenuOpen.value = !mobileMenuOpen.value;
 }
+
+// 登录与登出
+function handleLogin() {
+  router.push({name:'login'});
+}
+
+function handleLogout() {
+  userStore.clearUser();
+  router.push({ name: 'home' });
+}
 </script>
+
 
 <template>
   <nav class="bg-white shadow-md" ref="navRef">
@@ -141,7 +166,7 @@ function toggleMobileMenu() {
             </div>
           </div>
         </div>
-        <div class="flex items-center" v-show="route.name !=='search'">
+        <div class="flex items-center">
           <div class="hidden md:block">
             <a-input-search
               v-model:value="keyword"
@@ -153,6 +178,28 @@ function toggleMobileMenu() {
                 <SearchOutlined />
               </template>
             </a-input-search>
+          </div>
+          <div class="ml-4 flex items-center md:ml-6">
+            <template v-if="isAuthenticated">
+              <a-dropdown>
+                <a class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                  <UserOutlined />
+                  <span class="ml-1">{{ user.username }}</span>
+                  <DownOutlined class="ml-1" />
+                </a>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item key="1" @click="handleLogout">
+                      <LogoutOutlined />
+                      <span>退出登录</span>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </template>
+            <template v-else>
+              <a-button class="mr-2" type="primary" @click="handleLogin">登录</a-button>
+            </template>
           </div>
           <button
             @click="toggleMobileMenu"
@@ -196,6 +243,23 @@ function toggleMobileMenu() {
           </template>
         </a-input-search>
       </div>
+      <div class="px-2 pt-2 pb-3">
+        <template v-if="isAuthenticated">
+          <div class="flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-gray-700">
+            <span>
+              <UserOutlined />
+              {{ user.username }}
+            </span>
+            <a-button type="link" @click="handleLogout">
+              <LogoutOutlined />
+              退出登录
+            </a-button>
+          </div>
+        </template>
+        <template v-else>
+          <a-button type="primary" block @click="handleLogin">登录</a-button>
+        </template>
+      </div>
     </div>
   </nav>
 </template>
@@ -206,3 +270,4 @@ function toggleMobileMenu() {
   white-space: nowrap;
 }
 </style>
+
