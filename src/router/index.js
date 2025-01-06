@@ -78,6 +78,30 @@ const router = createRouter({
           component: () => import('@/views/manage/content/index.vue'),
         },
         {
+          path: 'column',
+          name: 'Column',
+          meta: { title: '栏目管理' },
+          component: () => import('@/views/manage/column/index.vue'),
+        },
+        {
+          path: 'users',
+          name: 'Users',
+          meta: { title: '用户管理' },
+          component: () => import('@/views/manage/users/index.vue'),
+        },
+        {
+          path: 'logs',
+          name: 'Logs',
+          meta: { title: '日志管理' },
+          component: () => import('@/views/manage/logs/index.vue'),
+        },
+        {
+          path: 'statistics',
+          name: 'Statistics',
+          meta: { title: '统计' },
+          component: () => import('@/views/manage/statistics/index.vue'),
+        },
+        {
           path: 'dataUpdate',
           name: 'DataUpdate',
           meta: { title: '数据上传' },

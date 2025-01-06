@@ -430,7 +430,7 @@ function transformNode(node) {
   const { id, name, children, ...rest } = node;
   return {
     key: id,
-    title: { name, ...rest, id },
+    title: { name, ...rest, id ,children},
     children: children ? children.map((child) => transformNode(child)) : null,
   };
 }
@@ -501,10 +501,11 @@ function findTopLevelNode(treeData, targetId, limitToNodeName = null) {
                   title="确定是否删除该节点"
                   ok-text="删除"
                   cancel-text="取消"
-                  :disabled="title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'"
+                  :disabled="title.children?.length >0 || title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'"
                   @confirm="handleDelete(treeKey)"
               >
-                <a-button :disabled="title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'" danger class="ml-2" size="small">删除</a-button>
+
+                <a-button :disabled="title.children?.length >0 || title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'" danger class="ml-2" size="small">删除</a-button>
               </a-popconfirm>
             </div>
           </div>

@@ -3,7 +3,7 @@ import { ref, computed, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { getAllTree } from '@/api/admin/content';
 import { Input, Dropdown, Menu } from 'ant-design-vue';
-import { SearchOutlined, DownOutlined, MenuOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons-vue';
+import { SearchOutlined, DownOutlined, MenuOutlined, UserOutlined, LogoutOutlined, LayoutOutlined } from '@ant-design/icons-vue';
 
 const navs = ref([]);
 const visibleItems = ref([]);
@@ -108,6 +108,10 @@ function handleLogout() {
   userStore.clearUser();
   router.push({ name: 'home' });
 }
+
+function handleManage(){
+    router.push({ name: 'manage' });
+}
 </script>
 
 
@@ -189,6 +193,10 @@ function handleLogout() {
                 </a>
                 <template #overlay>
                   <a-menu>
+                     <a-menu-item key="2" @click="handleManage">
+                      <LayoutOutlined />
+                      <span>后台管理</span>
+                    </a-menu-item>
                     <a-menu-item key="1" @click="handleLogout">
                       <LogoutOutlined />
                       <span>退出登录</span>

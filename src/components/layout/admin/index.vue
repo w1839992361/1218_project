@@ -3,7 +3,7 @@ import { reactive, h, onMounted, ref } from 'vue';
 import { RouterView, useRouter, useRoute } from 'vue-router';
 import {
     FileAddOutlined,
-    DatabaseOutlined,
+    DatabaseOutlined,UnorderedListOutlined,UserOutlined,ContainerOutlined,AreaChartOutlined
 } from '@ant-design/icons-vue';
 const state = reactive({
     selectedKeys: ['Contents'],
@@ -18,6 +18,30 @@ const items = ref([
         icon: () => h(FileAddOutlined),
         label: '内容管理(教育局使用)',
         title: 'Contents',
+    },
+    {
+        key: 'Statistics',
+        icon: () => h(AreaChartOutlined),
+        label: '资源统计',
+        title: 'Statistics',
+    },
+    {
+      key: 'Column',
+      icon: () => h(UnorderedListOutlined),
+      label: '栏目管理',
+      title: 'Column',
+    },
+    {
+      key: 'Users',
+      icon: () => h(UserOutlined),
+      label: '用户管理',
+      title: 'Users',
+    },
+    {
+      key: 'Logs',
+      icon: () => h(ContainerOutlined),
+      label: '操作日志',
+      title: 'Logs',
     },
     {
         key: 'DataGet',
