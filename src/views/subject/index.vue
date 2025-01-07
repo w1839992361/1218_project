@@ -20,8 +20,9 @@ function handlePageClick(info) {
   router.push({ name: "SubjectDetail" ,query:{...info}});
 }
 
-function handlePageBannerClick(id = route.query.id) {
-  router.push({name:'SubjectColumn',query:{id}})
+function handlePageBannerClick(id = route.query.id,selectId) {
+  console.log(selectId)
+  router.push({name:'SubjectColumn',query:{id,selectId}})
 }
 
 
@@ -70,7 +71,7 @@ getList();
     </a-row>
     <a-card class="page">
       <a-row :gutter="16">
-        <a-col :span="12" class="cursor-pointer" @click="handlePageBannerClick()">
+        <a-col :span="12" class="cursor-pointer" @click="handlePageBannerClick(undefind,item.id)">
           <img
               class="max-h-[340px] w-[100%] object-cover object-top"
               :src="imgUrl+item.coverUuid"
