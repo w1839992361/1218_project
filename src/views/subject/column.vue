@@ -33,7 +33,7 @@ async function getList() {
       };
     });
     resources.value = menuItems.value[0]?.children ?? [];
-    selectedKeys.value = [menuItems.value[0]?.id];
+    selectedKeys.value = route.query.selectId ?[+route.query.selectId] : [menuItems.value[0]?.id];
   }
 }
 

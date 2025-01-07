@@ -3,6 +3,8 @@ import { LeftCircleOutlined, RightCircleOutlined } from '@ant-design/icons-vue';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 // import { getList } from '@/api/home'
+import { getTagsById} from "@/api/other";
+
 
 const router = useRouter();
 
@@ -12,6 +14,19 @@ function handleBannerClick(item) {
     console.log(item)
 }
 
+const subjects = ref([]);
+const subjectsId = ref(2);
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const imgUrl = baseUrl + "/api/covers/stream/";
+async function getSubject() {
+  const {data, code} = await getTagsById(subjectsId.value);
+  if (code === 200) {
+    subjects.value = data[0]?.children ?? [];
+    console.log(subjects.value)
+  }
+}
+
+getSubject();
 
 function gotoUrl(name, query) {
   router.push({ name,query });
@@ -120,16 +135,16 @@ const data = ref({
 });
 
 // 专题点击
-function handleSubjectClick(item) {
-    console.log(item)
+function handleSubjectClick(id) {
+    router.push({name:'SubjectColumn',query:{id:subjectsId.value,selectId:id}})
 }
 
 // 课程教学点击
 function handleCourseClick(item) {
   // gotoUrl('course', { courseClass: 15,course:1,courseName:'学科课程'})
   // gotoUrl('course', { id: 1,courseClass: 16, courseName: '学科课程' });
-  // gotoUrl('course', { id: 1,courseClass: 15, courseName: '学科课程' });
-  gotoUrl('course', { id: 1,courseClass: 23, courseName: '拓展课程' });
+  gotoUrl('course', { id: 1,courseClass: 15, courseName: '学科课程' });
+//   gotoUrl('course', { id: 1,courseClass: 23, courseName: '拓展课程' });
 }
 
 function handlePracticeClick(item) {
@@ -157,9 +172,9 @@ function handlePracticeClick(item) {
     <h2 class="title">专题教育</h2>
 
     <a-row :gutter="16">
-        <a-col v-for="item in data.subject" :key="item.id" :span="8">
-            <div class="subject" @click="handleSubjectClick(item)">
-                <img :src="item.src" alt="">
+        <a-col v-for="item in subjects" :key="item.id" :span="8">
+            <div class="subject" @click="handleSubjectClick(item.id)">
+                <img :src="imgUrl+item.coverUuid" class="object-cover" alt="subject_preview">
             </div>
         </a-col>
     </a-row>
@@ -184,7 +199,7 @@ function handlePracticeClick(item) {
         </a-col>
     </a-row>
 
-
+<!-- 
     <h2 class="title">课后服务</h2>
 
     <a-row :gutter="16">
@@ -197,7 +212,7 @@ function handlePracticeClick(item) {
                 </a-card-meta>
             </a-card>
         </a-col>
-    </a-row>
+    </a-row> -->
 
 </template>
 
@@ -245,7 +260,7 @@ function handlePracticeClick(item) {
 
 .subject img {
     width: 100%;
-    min-height: 90px;
+    height: 90px;
     border-radius: 9px;
     cursor: pointer;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
