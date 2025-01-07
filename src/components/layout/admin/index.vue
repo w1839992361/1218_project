@@ -14,16 +14,16 @@ const route = useRoute();
 const router = useRouter();
 const items = ref([
     {
-        key: 'Contents',
-        icon: () => h(FileAddOutlined),
-        label: '资源管理',
-        title: 'Contents',
-    },
-    {
         key: 'Statistics',
         icon: () => h(AreaChartOutlined),
         label: '资源统计',
         title: 'Statistics',
+    },
+    {
+        key: 'Contents',
+        icon: () => h(FileAddOutlined),
+        label: '资源管理',
+        title: 'Contents',
     },
     {
       key: 'Column',
@@ -69,9 +69,9 @@ function handleClick({ item }) {
     <div class="w-[100%] h-[100%] flex">
         <div class="w-[226px] h-[100%]">
             <div @click="router.push({ name: 'home' })"
-                class="h-[60px] cursor-pointer flex items-center justify-center bg-[#FFF] text-[#3c3c3c]">
-                <SvgIcon icon="logo" width="60" height="60" />
-                <h2>后台管理系统</h2>
+                class="box-border p-5 h-[60px] cursor-pointer flex items-center justify-center bg-[#FFF] text-[#3c3c3c]">
+                <SvgIcon class="mr-2" icon="logo" width="60" height="60" />
+                <h2 class="text-[#242936] font-bold">后台管理系统</h2>
             </div>
             <a-menu class="h-[calc(100%-60px)]" @click="handleClick" v-model:selectedKeys="state.selectedKeys"
                 mode="inline" :items="items"></a-menu>

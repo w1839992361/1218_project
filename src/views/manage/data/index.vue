@@ -119,7 +119,7 @@ getVersion();
             <!--                        </a-col>-->
           </a-row>
           <a-upload :customRequest="uploadSql" :showUploadList="false" accept=".sql" :disabled="uploadingSql">
-            <a-button :loading="uploadingSql">
+            <a-button class="mt-2"  :loading="uploadingSql">
               <upload-outlined/>
               上传SQL文件
             </a-button>
@@ -149,7 +149,7 @@ getVersion();
             <!--                        </a-col>-->
           </a-row>
           <a-upload :customRequest="uploadZip" :showUploadList="false" accept=".zip" :disabled="uploadingZip">
-            <a-button :loading="uploadingZip">
+            <a-button class="mt-2" :loading="uploadingZip">
               <upload-outlined/>
               上传ZIP文件
             </a-button>

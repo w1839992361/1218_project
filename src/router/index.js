@@ -73,10 +73,11 @@ const router = createRouter({
     {
       path: '/manage',
       name: 'manage',
-      redirect: '/manage/contents',
+      redirect: '/manage/statistics',
       component: AdminLayout,
       meta: { title: '后台' },
       children: [
+        // 教育局全开
         {
           path: 'contents',
           name: 'Contents',
@@ -102,6 +103,15 @@ const router = createRouter({
           component: () => import('@/views/manage/logs/index.vue'),
         },
         {
+          path: 'dataGet',
+          name: 'DataGet',
+          meta: { title: '下载增量' },
+          component: () => import('@/views/manage/getData/index.vue'),
+        },
+
+
+        // 学校只保留这俩就行
+        {
           path: 'statistics',
           name: 'Statistics',
           meta: { title: '统计' },
@@ -110,14 +120,8 @@ const router = createRouter({
         {
           path: 'dataUpdate',
           name: 'DataUpdate',
-          meta: { title: '数据上传' },
+          meta: { title: '更新增量' },
           component: () => import('@/views/manage/data/index.vue'),
-        },
-        {
-          path: 'dataGet',
-          name: 'DataGet',
-          meta: { title: '数据同步' },
-          component: () => import('@/views/manage/getData/index.vue'),
         },
       ]
     }

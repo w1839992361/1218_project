@@ -71,7 +71,6 @@ getVersion();
         <p>当前版本: {{ version }}</p>
         <a-button
             class="mt-5"
-            type="primary"
             :loading="exporting"
             @click="handleExport"
         >
