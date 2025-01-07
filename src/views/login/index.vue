@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, toRaw } from 'vue';
-import { login, reg } from '@/api/login';
+import { login, reg,getInfo } from '@/api/login';
 import { PlusOutlined, LoadingOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 import { setToken } from '@/utils/index';
@@ -73,8 +73,9 @@ const submit = () => {
             const { code, data } = await login(toRaw(loginForm));
             if (code === 200) {
                 setToken(data);
+                const user = await getInfo()
                 // 示例用法
-                userStore.setUserInfo(data);
+                userStore.setUserInfo(user.data);
                 userStore.setToken(data);
                 message.success('登录成功!');
                 resetForm();

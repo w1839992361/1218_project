@@ -13,6 +13,9 @@ const mobileMenuOpen = ref(false);
 
 import { useUserStore } from '@/stores/user';
 const userStore = useUserStore();
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+const avatar = ref(baseUrl +'/api/avatar/stream/' + userStore.userInfo.avatar)
+const userInfo = ref(userStore.userInfo)
 
 // 使用 computed 确保 isAuthenticated 是响应式的
 const isAuthenticated = computed(() => userStore.isAuthenticated);
@@ -187,8 +190,8 @@ function handleManage(){
             <template v-if="isAuthenticated">
               <a-dropdown>
                 <a class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                  <UserOutlined />
-                  <span class="ml-1">{{ user.username }}</span>
+                  <img :src="avatar" class="w-[30px] h-[30px] rounded-xl" alt="">
+                  <span class="ml-1">{{ userInfo.username }}</span>
                   <DownOutlined class="ml-1" />
                 </a>
                 <template #overlay>
@@ -254,9 +257,9 @@ function handleManage(){
       <div class="px-2 pt-2 pb-3">
         <template v-if="isAuthenticated">
           <div class="flex items-center justify-between px-3 py-2 rounded-md text-base font-medium text-gray-700">
-            <span>
-              <UserOutlined />
-              {{ user.username }}
+            <span class="flex items-center">
+              <img :src="avatar" class="w-[30px] h-[30px] rounded-xl mr-2" alt="">
+              {{ userInfo.username }}
             </span>
             <a-button type="link" @click="handleLogout">
               <LogoutOutlined />
