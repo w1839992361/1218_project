@@ -20,7 +20,8 @@ function handlePageClick(info) {
   router.push({ name: "SubjectDetail" ,query:{...info}});
 }
 
-function handlePageBannerClick(item) {
+function handlePageBannerClick(id = route.query.id) {
+  router.push({name:'SubjectColumn',query:{id}})
   message.success("success!");
 }
 
@@ -70,7 +71,7 @@ getList();
     </a-row>
     <a-card class="page">
       <a-row :gutter="16">
-        <a-col :span="12" class="cursor-pointer" @click="handlePageBannerClick(1)">
+        <a-col :span="12" class="cursor-pointer" @click="handlePageBannerClick()">
           <img
               class="max-h-[340px] w-[100%] object-cover object-top"
               :src="imgUrl+item.coverUuid"

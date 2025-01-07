@@ -20,7 +20,6 @@ const userInfo = ref(userStore.userInfo)
 // 使用 computed 确保 isAuthenticated 是响应式的
 const isAuthenticated = computed(() => userStore.isAuthenticated);
 
-const user = ref({ username: '' });
 
 async function fetchNavs() {
   const { data, code } = await getAllTree();

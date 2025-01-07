@@ -50,6 +50,12 @@ const router = createRouter({
           component: () => import('@/views/subject/index.vue'),
         },
         {
+          path: 'subject/column',
+          name: 'SubjectColumn',
+          meta: { title: '其他栏目' },
+          component: () => import('@/views/subject/column.vue'),
+        },
+        {
           path: 'subject/subjectDetail',
           name: 'SubjectDetail',
           meta: { title: '拓展栏目通用' },
