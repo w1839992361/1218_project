@@ -21,7 +21,6 @@ function handlePageClick(info) {
 }
 
 function handlePageBannerClick(id = route.query.id,selectId) {
-  console.log(selectId)
   router.push({name:'SubjectColumn',query:{id,selectId}})
 }
 
