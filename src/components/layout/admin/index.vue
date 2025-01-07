@@ -3,7 +3,7 @@ import { reactive, h, onMounted, ref } from 'vue';
 import { RouterView, useRouter, useRoute } from 'vue-router';
 import {
     FileAddOutlined,
-    DatabaseOutlined,UnorderedListOutlined,UserOutlined,ContainerOutlined,AreaChartOutlined
+    UploadOutlined,UnorderedListOutlined,UserOutlined,ContainerOutlined,AreaChartOutlined,DownloadOutlined
 } from '@ant-design/icons-vue';
 const state = reactive({
     selectedKeys: ['Contents'],
@@ -16,7 +16,7 @@ const items = ref([
     {
         key: 'Contents',
         icon: () => h(FileAddOutlined),
-        label: '内容管理(教育局使用)',
+        label: '资源管理',
         title: 'Contents',
     },
     {
@@ -45,14 +45,14 @@ const items = ref([
     },
     {
         key: 'DataGet',
-        icon: () => h(DatabaseOutlined),
-        label: '数据同步(教育局使用)',
+        icon: () => h(DownloadOutlined),
+        label: '下载增量',
         title: 'DataGet',
     },
     {
       key: 'DataUpdate',
-      icon: () => h(DatabaseOutlined),
-      label: '数据上传(学校使用)',
+      icon: () => h(UploadOutlined),
+      label: '更新增量',
       title: 'DataUpdate',
     },
 ]);
