@@ -14,7 +14,8 @@ const mobileMenuOpen = ref(false);
 import { useUserStore } from '@/stores/user';
 const userStore = useUserStore();
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
-const avatar = ref(baseUrl +'/api/avatar/stream/' + userStore.userInfo.avatar)
+const avatar = ref();
+avatar.value = baseUrl +'/api/avatar/stream/' + userStore?.userInfo?.avatar
 const userInfo = ref(userStore.userInfo)
 
 // 使用 computed 确保 isAuthenticated 是响应式的
