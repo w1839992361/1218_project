@@ -6,6 +6,7 @@ import { message } from 'ant-design-vue';
 import { setToken } from '@/utils/index';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
+import { getTagsByParentId, getTagsByLevel, getTagsById } from "@/api/other";
 const userStore = useUserStore();
 
 const router = useRouter();
@@ -31,7 +32,7 @@ const regFormRef = ref(null);
 const regForm = reactive({
     username: '',
     password: '',
-    role: 'user',
+    role: '',
     avatar: '',
     nikename: '',
     email: '',
@@ -75,7 +76,6 @@ const submit = () => {
                 setToken(data);
                 const user = await getInfo()
                 // 示例用法
-                localStorage.clear();
                 userStore.setUserInfo(user.data);
                 userStore.setToken(data);
                 message.success('登录成功!');
@@ -144,6 +144,9 @@ function handleChange(e) {
                     </a-form-item>
                     <a-form-item label="密码" name="password">
                         <a-input-password v-model:value="regForm.password" />
+                    </a-form-item>
+                             <a-form-item label="role" name="role">
+                        <a-input-password v-model:value="regForm.role" />
                     </a-form-item>
                     <a-form-item label="头像" name="avatar">
                         <a-upload v-model:file-list="fileList" name="avatarFile" list-type="picture-card"

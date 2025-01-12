@@ -6,6 +6,7 @@ export const useUserStore = defineStore('user', () => {
     const userInfo = ref(null);
 
     function setToken(newToken) {
+        console.log(newToken)
         token.value = newToken;
     }
 

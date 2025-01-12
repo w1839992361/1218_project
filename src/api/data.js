@@ -32,11 +32,9 @@ export function getSqlFile() {
     })
 }
 
-
-
-export function getUpdateZip() {
+export function getUpdateZip(id) {
     return request({
-        url: '/api/update/getUpdateZip/0',
+        url: '/api/update/getUpdateZip/'+id,
         method: 'get',
         responseType: 'blob'
     })

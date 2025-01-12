@@ -421,7 +421,7 @@ async function getList() {
   treeData.value = data.map((item) => transformNode(item));
   expandedKeys.value = treeData.value[0].id
   isLoading.value = false;
-  console.log(treeData.value);
+  // console.log(treeData.value);
 }
 
 getList();
