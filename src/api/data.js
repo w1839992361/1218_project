@@ -23,8 +23,6 @@ export function updateSqlFile(data) {
     })
 }
 
-
-
 export function getSqlFile() {
     return request({
         url: '/api/update/getSqlFile',

@@ -132,7 +132,7 @@ function handleChange(e) {
                 </a-form>
                 <div class="w-[100%] flex justify-end items-center">
                     <a-button type="primary" @click="submit">登录</a-button>
-                    <a-button type="text" @click="toggleForm"> 去注册</a-button>
+                    <!-- <a-button type="text" @click="toggleForm"> 去注册</a-button> -->
                 </div>
             </div>
 

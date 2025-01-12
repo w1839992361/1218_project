@@ -5,6 +5,7 @@ import { reg } from "@/api/login";
 import { getList, update } from "@/api/user";
 import { LoadingOutlined, PlusOutlined } from "@ant-design/icons-vue";
 import { useUserStore } from "@/stores/user";
+import { getInfo } from '@/api/login';
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 console.log(baseUrl);
 const columns = [
@@ -183,7 +184,6 @@ const getRoleColor = (role) => {
 
 const userStore = useUserStore();
 const userInfo = ref(userStore.userInfo);
-console.log(userInfo);
 
 const regFormRef = ref(null);
 const regVisible = ref(false);
@@ -263,7 +263,7 @@ function handleChange2(e) {
         </template>
         <template v-if="column.key === 'action'">
           <a-button type="link" @click="editItem(record)">编辑</a-button>
-          <a-button type="link" danger @click="deleteItem(record)">删除</a-button>
+          <a-button type="link" v-if="userInfo.role === 'root'" danger @click="deleteItem(record)">删除</a-button>
         </template>
       </template>
     </a-table>

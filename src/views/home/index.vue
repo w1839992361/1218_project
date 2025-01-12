@@ -22,7 +22,7 @@ async function getSubject() {
   const {data, code} = await getTagsById(subjectsId.value);
   if (code === 200) {
     subjects.value = data[0]?.children ?? [];
-    console.log(subjects.value)
+    // console.log(subjects.value)
   }
 }
 

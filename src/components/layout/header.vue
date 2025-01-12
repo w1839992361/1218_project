@@ -197,7 +197,7 @@ function handleManage(){
                 </a>
                 <template #overlay>
                   <a-menu>
-                     <a-menu-item key="2" @click="handleManage">
+                     <a-menu-item v-if="userInfo.role !=='user'" key="2" @click="handleManage">
                       <LayoutOutlined />
                       <span>后台管理</span>
                     </a-menu-item>

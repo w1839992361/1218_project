@@ -117,11 +117,10 @@ getVersion();
 
 <template>
   <div class="container">
-    <h1 class="title">数据导出</h1>
     <div class="flex justify-center items-center">
       <a-card
         :loading="!version"
-        title="文件导出"
+        title="数据导出"
         bordered
         class="text-center min-w-[800px]"
       >
