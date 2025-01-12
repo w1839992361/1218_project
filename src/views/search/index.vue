@@ -19,11 +19,12 @@ const typeOptions = [
 ]
 
 const tabItems = [
-  { key: '1', label: '课时(1)' },
-  { key: '2', label: '基础课程(0)' },
-  { key: '3', label: '复习课程(0)' },
-  { key: '4', label: '专题课程(0)' },
-  { key: '5', label: '考研(0)' }
+  { key: '1', label: '搜索' },
+  // { key: '1', label: '课时(1)' },
+  // { key: '2', label: '基础课程(0)' },
+  // { key: '3', label: '复习课程(0)' },
+  // { key: '4', label: '专题课程(0)' },
+  // { key: '5', label: '考研(0)' }
 ]
 
 

@@ -60,13 +60,31 @@ const dataSource = ref([
   },
 ]);
 
-const totalResources = ref(dataSource.value.reduce((acc, curr) => acc + curr.resourceCount, 0));
-const totalDownloads = ref(dataSource.value.reduce((acc, curr) => acc + curr.downloads, 0));
-const averageRating = ref((dataSource.value.reduce((acc, curr) => acc + curr.averageRating, 0) / dataSource.value.length).toFixed(1));
+const totalResources = ref(0);
+const totalDownloads = ref(0);
+const averageRating = ref(0);
+
+const animateValues = () => {
+  const targetResources = dataSource.value.reduce((acc, curr) => acc + curr.resourceCount, 0);
+  const targetDownloads = dataSource.value.reduce((acc, curr) => acc + curr.downloads, 0);
+  const targetAverageRating = (dataSource.value.reduce((acc, curr) => acc + curr.averageRating, 0) / dataSource.value.length).toFixed(1);
+
+  let step = 0;
+  const steps = 50;
+  const interval = setInterval(() => {
+    step++;
+    totalResources.value = Math.round((targetResources / steps) * step);
+    totalDownloads.value = Math.round((targetDownloads / steps) * step);
+    averageRating.value = (targetAverageRating * step / steps).toFixed(1);
+
+    if (step >= steps) clearInterval(interval);
+  }, 20);
+};
+
+animateValues();
 
 const handleTableChange = (pagination, filters, sorter) => {
   console.log('Various parameters', pagination, filters, sorter);
-  // 这里可以根据需要处理分页、筛选和排序
 };
 </script>
 

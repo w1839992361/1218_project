@@ -1,66 +1,57 @@
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
+import {getList} from '@/api/logs';
 
 const columns = [
   {
     title: '时间',
-    dataIndex: 'timestamp',
-    key: 'timestamp',
+    dataIndex: 'actionTime',
+    key: 'actionTime',
     sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
   },
   {
-    title: '级别',
-    dataIndex: 'level',
-    key: 'level',
-    filters: [
-      { text: 'INFO', value: 'INFO' },
-      { text: 'WARNING', value: 'WARNING' },
-      { text: 'ERROR', value: 'ERROR' },
-    ],
-    onFilter: (value, record) => record.level.indexOf(value) === 0,
+    title: '请求方式',
+    dataIndex: 'actionMethod',
+    key: 'actionMethod'
   },
   {
-    title: '来源',
-    dataIndex: 'source',
-    key: 'source',
+    title: '请求路径',
+    dataIndex: 'actionUrl',
+    key: 'actionUrl',
   },
   {
-    title: '消息',
-    dataIndex: 'message',
-    key: 'message',
+    title: '请求参数',
+    dataIndex: 'actionParams',
+    key: 'actionParams',
   },
 ];
 
-const dataSource = ref([
-  {
-    key: '1',
-    timestamp: '2023-05-10 10:30:15',
-    level: 'INFO',
-    source: '用户服务',
-    message: '用户登录成功',
-  },
-  {
-    key: '2',
-    timestamp: '2023-05-10 11:15:22',
-    level: 'WARNING',
-    source: '数据库服务',
-    message: '数据库连接缓慢',
-  },
-  {
-    key: '3',
-    timestamp: '2023-05-10 12:05:48',
-    level: 'ERROR',
-    source: '支付服务',
-    message: '支付交易失败',
-  },
-  {
-    key: '4',
-    timestamp: '2023-05-10 13:20:30',
-    level: 'INFO',
-    source: '文件服务',
-    message: '文件上传完成',
-  },
-]);
+const dataSource = ref([]);
+
+
+const queryParams = ref({
+  actionUser: '',
+  actionUrl: '',
+  page: 1,
+  size: 10,
+  total: null
+});
+const _getList = async () => {
+  let ojb = Object.assign(queryParams.value);
+  if (ojb.actionUser === '') {
+    ojb.actionUser = ' ';
+  }
+  if (ojb.actionUrl === '') {
+    ojb.actionUrl = ' ';
+  }
+  const {data, code} = await getList(queryParams.value);
+  if (code === 200) {
+    dataSource.value = data.records;
+    queryParams.value.total = data.total;
+  }
+}
+
+_getList();
 
 
 const handleTableChange = (pagination, filters, sorter) => {
@@ -68,13 +59,19 @@ const handleTableChange = (pagination, filters, sorter) => {
   // 这里可以根据需要处理分页、筛选和排序
 };
 
+
+const pageChange = (page,size)=>{
+  queryParams.value.page = page;
+  queryParams.value.size = size;
+  _getList();
+}
 const getLogLevelColor = (level) => {
   switch (level) {
-    case 'INFO':
+    case 'GET':
       return 'green';
-    case 'WARNING':
+    case 'POST':
       return 'orange';
-    case 'ERROR':
+    case 'DELETE':
       return 'red';
     default:
       return 'default';
@@ -84,18 +81,30 @@ const getLogLevelColor = (level) => {
 <template>
   <div class="p-6">
     <h1 class="text-2xl font-bold mb-6">日志管理</h1>
-
-    <a-table 
-      :columns="columns" 
-      :dataSource="dataSource"
-      @change="handleTableChange"
+    <a-form layout="inline"  class="mb-2" :model="queryParams">
+      <a-form-item label="日志操作人">
+        <a-input v-model:value="queryParams.actionUser" placeholder="请输入用户名"/>
+      </a-form-item>
+      <a-form-item label="日志请求地址">
+        <a-input v-model:value="queryParams.actionUrl" placeholder="请输入用户名"/>
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" @click="_getList">查询</a-button>
+      </a-form-item>
+    </a-form>
+    <a-table
+        :columns="columns"
+        :dataSource="dataSource"
+        :pagination="false"
+        @change="handleTableChange"
     >
       <template #bodyCell="{ column, text }">
-        <template v-if="column.key === 'level'">
+        <template v-if="column.key === 'actionMethod'">
           <a-tag :color="getLogLevelColor(text)">{{ text }}</a-tag>
         </template>
       </template>
     </a-table>
+    <a-pagination v-model:current="queryParams.page"  size="small"  :total="queryParams.total" @change="pageChange"/>
   </div>
 </template>
 

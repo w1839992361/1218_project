@@ -88,8 +88,8 @@ function navigateTo(nav) {
 
 const keyword = ref('');
 
-function handleSearch(keyword) {
-  router.push({name:'search',query:{keyword}})
+function handleSearch(k) {
+  router.push({name:'search',query:{keyword:k}})
 }
 
 const showOverflowMenu = ref(false);
@@ -176,6 +176,7 @@ function handleManage(){
         <div class="flex items-center">
           <div class="hidden md:block">
             <a-input-search
+                v-show="route.name !== 'search'"
               v-model:value="keyword"
               placeholder="请输入关键字"
               class="w-64"

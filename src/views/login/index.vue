@@ -75,6 +75,7 @@ const submit = () => {
                 setToken(data);
                 const user = await getInfo()
                 // 示例用法
+                localStorage.clear();
                 userStore.setUserInfo(user.data);
                 userStore.setToken(data);
                 message.success('登录成功!');
