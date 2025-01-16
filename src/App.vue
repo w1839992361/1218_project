@@ -9,10 +9,37 @@ const locale = zhCN;
 const userStore = useUserStore();
 const userInfo = ref(userStore.userInfo);
 
+const protectedRoutes = [
+    '/manage/contents',
+    '/manage/column',
+    '/manage/users',
+    '/manage/logs',
+    '/manage/dataGet',
+    '/manage/statistics',
+    '/manage/dataUpdate'
+];
+
 router.beforeEach(async (to, from, next) => {
-   const user = await getInfo();
-   userStore.setUserInfo(user.data);
-   next();
+   try {
+       if (to.path === '/login') {
+           next();
+           return;
+       }
+       const user = await getInfo();
+       userStore.setUserInfo(user.data);
+       const userRole = user.data.role;
+       if (protectedRoutes.includes(to.path) && !(userRole === 'root' || userRole === 'admin')) {
+           next('/login');
+       } else {
+           next();
+       }
+   } catch (error) {
+       if (to.path !== '/login') {
+           next('/login');
+       } else {
+           next();
+       }
+   }
 });
 </script>
 
