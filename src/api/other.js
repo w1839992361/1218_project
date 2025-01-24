@@ -26,3 +26,12 @@ export function getTagInfoById(id){
     method: 'get'
   })
 }
+
+
+export function updateStatistics(data){
+  return request({
+    url: '/api/teriTag/updateStatistics',
+    method: 'post',
+    data
+  })
+}

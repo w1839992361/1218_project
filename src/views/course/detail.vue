@@ -1,12 +1,11 @@
 <script setup>
 import breadcrumb from "@/components/breadcrumb/index.vue";
 import Preview from "@/components/preview/index.vue";
-import {ref} from "vue";
-import {h} from "vue";
+import {ref,watch,h} from "vue";
 import {message} from "ant-design-vue";
-import {getTagsById} from "@/api/other";
+import {getTagsById, updateStatistics} from "@/api/other";
 import {getDocsInfo, getVideoInfo, getVideoUUID} from "@/api/admin/content";
-
+import { useVideosInfo } from '@/stores/video';
 import {
   DownloadOutlined,
   ShareAltOutlined,
@@ -23,6 +22,7 @@ const rateValue = ref(5);
 
 const detail = ref();
 const currentInfo = ref();
+
 const activeId = ref();
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -30,36 +30,40 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const allVideos = ref([]);
 const allDocs = ref([]);
 detail.value = route.query;
-const localData = ref({});
 
-// initLocalData();
-
-// 初始化本地存储
-function initLocalData() {
-  const storedData = localStorage.getItem("myVideo");
-  if (storedData) {
-    localData.value = JSON.parse(storedData);
-    if (localData.value[detail.value.id]) {
-      Object.assign(currentInfo.value, localData.value[detail.value.id]);
-    }
-  }
+const videoInfo = useVideosInfo();
+// 初始化数据
+const videoId = route.query.id; // 获取视频 ID
+if (videoId) {
+  const videoData = videoInfo.getVideoData(videoId); // 调用 store 方法
+  rateValue.value = videoData.rating;
+  currentInfo.value = videoData;
 }
+// 增加浏览量
+videoInfo.incrementViews(videoId);
+// 监听评分变化
+watch(rateValue, (newRating) => {
+  if (videoId) {
+    videoInfo.setRating(videoId, newRating);
+    message.success("评分已更新！");
+  }
+});
 
 // 点赞、收藏事件
-function handleOperate(key, num) {
-  const currentId = detail.value.id;
-  const updatedNum = num + 1;
+function handleOperate(key) {
+  if (!videoId) return;
 
-  if (!localData.value[currentId]) {
-    localData.value[currentId] = {};
+  if (key === "favoriteNum") {
+    videoInfo.toggleFavorite(videoId);
+    message.success("收藏状态已更新！");
   }
-  localData.value[currentId][key] = updatedNum;
-  currentInfo.value[key] = updatedNum;
 
-  localStorage.setItem("myVideo", JSON.stringify(localData.value));
-  message.success(`${key === "favoriteNum" ? "收藏" : "点赞"}成功！`);
+  if (key === "subNum") {
+    videoInfo.likeVideo(videoId);
+    message.success("点赞成功！");
+  }
 }
-console.log(detail);
+
 
 
 const fileUrl = ref('');
@@ -84,10 +88,6 @@ function handleResClick(item) {
 }
 
 function handleDownClick(item) {
-  // console.log(item)
-  // console.log(item.id)
-  // console.log(typeof item.id)
-  // return
   if (!item?.fileName) {
     window.open(baseUrl + '/api/videos/stream/' + item.id);
   } else {
@@ -145,26 +145,38 @@ function handleCopy() {
 
 <template>
   <a-row :gutter="16">
-    <!-- <a-col :span="10"> -->
-    <!-- <breadcrumb :navs="[]" /> -->
-    <!-- </a-col> -->
     <a-col :span="24" class="flex items-center justify-end">
-      <a-rate v-model:value="rateValue" allow-half/>
+      <!-- 评分 -->
+      <a-rate v-model:value="rateValue" allow-half />
       <span style="margin-left: 10px">{{ rateValue }}分</span>
 
-      <a-button type="text" :icon="h(StarOutlined)" @click="handleOperate('favoriteNum',currentInfo?.favoriteNum)" shape="round"> 收藏({{ currentInfo?.favoriteNum }})</a-button>
-      <a-button type="text" shape="round" @click="handleOperate('subNum',currentInfo?.subNum)" >
-        <template #icon>
-          <LikeOutlined/>
-        </template>
-        点赞({{ currentInfo?.subNum }})
+      <!-- 收藏 -->
+      <a-button
+          type="text"
+          :icon="h(StarOutlined)"
+          @click="handleOperate('favoriteNum')"
+          shape="round"
+      >
+        收藏({{ videoInfo.getVideoData(route.query.id)?.favorites ? "已收藏" : "未收藏" }})
       </a-button>
+
+      <!-- 点赞 -->
+      <a-button type="text" shape="round" @click="handleOperate('subNum')">
+        <template #icon>
+          <LikeOutlined />
+        </template>
+        点赞({{ videoInfo.getVideoData(route.query.id)?.likes }})
+      </a-button>
+
+      <!-- 浏览量 -->
       <a-button type="text" shape="round">
         <template #icon>
-          <EyeOutlined/>
-          {{ currentInfo?.viewNum }}
+          <EyeOutlined />
         </template>
+        浏览量({{ videoInfo.getVideoData(route.query.id)?.views }})
       </a-button>
+
+      <!-- 分享链接 -->
       <a-button type="text" shape="round" @click="handleCopy">
         <template #icon>
           <ShareAltOutlined />
@@ -243,7 +255,7 @@ function handleCopy() {
             </div>
           </a-col>
           <a-col :span="24" v-if="allVideos.length ==0 && allDocs.length ==0">
-            <a-empty   :description="null" />
+            <a-empty :description="null"/>
           </a-col>
         </a-row>
       </a-card>

@@ -39,7 +39,7 @@ function download(item) {
 }
 
 function handleSingleClick(info) {
-  router.push({ name: "courseDetails" ,query:{...info}});
+  router.push({ name: "courseDetails" ,query:{id:info.id,resourceUuid:info.resourceUuid}});
 }
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;

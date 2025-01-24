@@ -19,36 +19,36 @@ const items = ref([
         label: '资源统计',
         title: 'Statistics',
     },
-    // {
-    //     key: 'Contents',
-    //     icon: () => h(FileAddOutlined),
-    //     label: '资源管理',
-    //     title: 'Contents',
-    // },
-    // {
-    //   key: 'Column',
-    //   icon: () => h(UnorderedListOutlined),
-    //   label: '栏目管理',
-    //   title: 'Column',
-    // },
-    // {
-    //   key: 'Users',
-    //   icon: () => h(UserOutlined),
-    //   label: '用户管理',
-    //   title: 'Users',
-    // },
+    {
+        key: 'Contents',
+        icon: () => h(FileAddOutlined),
+        label: '资源管理',
+        title: 'Contents',
+    },
+    {
+      key: 'Column',
+      icon: () => h(UnorderedListOutlined),
+      label: '栏目管理',
+      title: 'Column',
+    },
+    {
+      key: 'Users',
+      icon: () => h(UserOutlined),
+      label: '用户管理',
+      title: 'Users',
+    },
     {
       key: 'Logs',
       icon: () => h(ContainerOutlined),
       label: '操作日志',
       title: 'Logs',
     },
-    // {
-    //     key: 'DataGet',
-    //     icon: () => h(DownloadOutlined),
-    //     label: '下载增量',
-    //     title: 'DataGet',
-    // },
+    {
+        key: 'DataGet',
+        icon: () => h(DownloadOutlined),
+        label: '下载增量',
+        title: 'DataGet',
+    },
     {
       key: 'DataUpdate',
       icon: () => h(UploadOutlined),
@@ -86,25 +86,5 @@ function handleClick({ item }) {
 </template>
 
 <style scoped>
-/* 创建复杂的自定义滚动条 */
-.scrollbar::-webkit-scrollbar {
-    width: 10px;
-}
 
-/* 定义滚动条轨道 */
-.scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-
-}
-
-/* 定义滚动条滑块 */
-.scrollbar::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 9px;
-}
-
-/* 利用伪元素添加高光效果 */
-.scrollbar::-webkit-scrollbar-thumb::after {
-    content: "";
-}
 </style>

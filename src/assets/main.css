@@ -19,3 +19,26 @@ body{
 .ant-btn-default, .ant-btn-dashed { 
   background-color: white; 
 }
+
+
+/* 创建复杂的自定义滚动条 */
+*::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* 定义滚动条轨道 */
+*::-webkit-scrollbar-track {
+  background: transparent;
+
+}
+
+/* 定义滚动条滑块 */
+*::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 9px;
+}
+
+/* 利用伪元素添加高光效果 */
+*::-webkit-scrollbar-thumb::after {
+  content: "";
+}
