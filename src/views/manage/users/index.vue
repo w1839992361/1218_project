@@ -233,7 +233,6 @@ function handleChange2(e) {
 
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">用户管理</h1>
     <a-form layout="inline" class="mb-2" :model="queryParams">
       <a-form-item label="用户名">
         <a-input v-model:value="queryParams.keyword" placeholder="请输入用户名" />

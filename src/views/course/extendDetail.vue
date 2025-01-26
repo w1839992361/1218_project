@@ -16,6 +16,7 @@ import {getTagsById} from "@/api/other.js";
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + "/api/covers/stream/";
 import {useRoute} from "vue-router";
+import {useVideosInfo} from "@/stores/video.js";
 
 const route = useRoute();
 
@@ -26,7 +27,10 @@ const activeId = ref();
 const allVideos = ref([]);
 const currentInfo = ref();
 detail.value = route.query;
+const videoInfo = useVideosInfo();
+const videoId = route.query.id; // 获取视频 ID
 
+videoInfo.incrementViews(videoId);
 async function getInfo() {
   const {data, code} = await getTagsById(detail.value.id);
   if (code === 200) {

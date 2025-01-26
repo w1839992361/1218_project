@@ -6,6 +6,7 @@ import {message} from "ant-design-vue";
 import { useRouter, useRoute } from "vue-router";
 
 import { getTagsById} from "@/api/other";
+import {useVideosInfo} from "@/stores/video.js";
 // import {getDocsInfo, getVideoInfo, getVideoUUID} from "@/api/admin/content";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
@@ -14,6 +15,7 @@ const imgUrl = baseUrl + "/api/covers/stream/";
 const route = useRoute();
 const router = useRouter();
 
+const videoInfo = useVideosInfo();
 const subjects = ref([]);
 
 function handlePageClick(info) {
@@ -23,7 +25,6 @@ function handlePageClick(info) {
 function handlePageBannerClick(id = route.query.id,selectId) {
   router.push({name:'SubjectColumn',query:{id,selectId}})
 }
-
 
 
 async function getList() {
@@ -98,7 +99,7 @@ getList();
               </a-card-meta>
 
               <span style="display: block; margin-top: 10px; color: #ccc"
-              >浏览量: {{ child.viewNum || 0 }}</span
+              >浏览量: {{  videoInfo.getVideoData(child.id)?.views }}</span
               >
             </a-col>
           </a-row>

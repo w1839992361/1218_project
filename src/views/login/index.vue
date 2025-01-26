@@ -124,10 +124,10 @@ function handleChange(e) {
                 <h2>登录</h2>
                 <a-form ref="loginFormRef" :model="loginForm" :rules="loginFormRules">
                     <a-form-item label="账号" name="username">
-                        <a-input v-model:value="loginForm.username" />
+                        <a-input @keydown.enter="submit" v-model:value="loginForm.username" />
                     </a-form-item>
                     <a-form-item label="密码" name="password">
-                        <a-input-password v-model:value="loginForm.password" />
+                        <a-input-password @keydown.enter="submit" v-model:value="loginForm.password" />
                     </a-form-item>
                 </a-form>
                 <div class="w-[100%] flex justify-end items-center">

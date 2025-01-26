@@ -107,7 +107,6 @@ const deleteItem = async (id) => {
 
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">栏目管理</h1>
     <a-button type="primary" class="mb-4" @click="showModal">添加栏目</a-button>
     <a-table :columns="columns" :dataSource="dataSource" rowKey="key">
       <template #bodyCell="{ column, record }">

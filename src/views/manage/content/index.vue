@@ -125,21 +125,21 @@ const columns = [
       <a-card class="h-[100%] overflow-x-auto">
         <a-tree showLine blockNode :tree-data="treeData">
           <template #title="{ key: treeKey, title }">
-            <a-dropdown :trigger="['contextmenu']">
+            <a-dropdown :trigger="['contextmenu']" @click="handleClick(title)">
               <div class="w-[100%] flex justify-between">
-                <span @click="handleClick(title)">
+                <span >
                   {{ title.name }}
                 </span>
                 <!-- {{ addResForm }} -->
                 <div>
-                  <a-dropdown trigger="click">
+                  <a-dropdown >
                     <a class="ant-dropdown-link" @click.prevent>
                       <MoreOutlined/>
                     </a>
                     <template #overlay>
                       <a-menu>
                         <a-menu-item key="0">
-                          <a-button size="small" type="link" @click="
+                          <a-button size="small" type="link" @click.stop="
                 addDialog = true;
                 addResForm.level = title.level + 1;
                 addResForm.parentId = treeKey;

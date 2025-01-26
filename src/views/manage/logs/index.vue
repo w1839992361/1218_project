@@ -80,7 +80,6 @@ const getLogLevelColor = (level) => {
 </script>
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-6">日志管理</h1>
     <a-form layout="inline"  class="mb-2" :model="queryParams">
       <a-form-item label="日志操作人">
         <a-input v-model:value="queryParams.actionUser" placeholder="请输入用户名"/>

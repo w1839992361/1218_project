@@ -2,89 +2,121 @@
 import { reactive, h, onMounted, ref } from 'vue';
 import { RouterView, useRouter, useRoute } from 'vue-router';
 import {
-    FileAddOutlined,
-    UploadOutlined,UnorderedListOutlined,UserOutlined,ContainerOutlined,AreaChartOutlined,DownloadOutlined
+  FileAddOutlined,
+  UploadOutlined,
+  UnorderedListOutlined,
+  UserOutlined,
+  ContainerOutlined,
+  AreaChartOutlined,
+  DownloadOutlined
 } from '@ant-design/icons-vue';
+
 const state = reactive({
-    selectedKeys: ['Contents'],
+  selectedKeys: ['Contents'],
 });
 
 const route = useRoute();
-
 const router = useRouter();
+
 const items = ref([
-    {
-        key: 'Statistics',
-        icon: () => h(AreaChartOutlined),
-        label: '资源统计',
-        title: 'Statistics',
-    },
-    {
-        key: 'Contents',
-        icon: () => h(FileAddOutlined),
-        label: '资源管理',
-        title: 'Contents',
-    },
-    {
-      key: 'Column',
-      icon: () => h(UnorderedListOutlined),
-      label: '栏目管理',
-      title: 'Column',
-    },
-    {
-      key: 'Users',
-      icon: () => h(UserOutlined),
-      label: '用户管理',
-      title: 'Users',
-    },
-    {
-      key: 'Logs',
-      icon: () => h(ContainerOutlined),
-      label: '操作日志',
-      title: 'Logs',
-    },
-    {
-        key: 'DataGet',
-        icon: () => h(DownloadOutlined),
-        label: '下载增量',
-        title: 'DataGet',
-    },
-    {
-      key: 'DataUpdate',
-      icon: () => h(UploadOutlined),
-      label: '更新增量',
-      title: 'DataUpdate',
-    },
+  { key: 'Statistics', icon: () => h(AreaChartOutlined), label: '资源统计', title: 'Statistics' },
+  { key: 'Contents', icon: () => h(FileAddOutlined), label: '资源管理', title: 'Contents' },
+  { key: 'Column', icon: () => h(UnorderedListOutlined), label: '栏目管理', title: 'Column' },
+  { key: 'Users', icon: () => h(UserOutlined), label: '用户管理', title: 'Users' },
+  { key: 'Logs', icon: () => h(ContainerOutlined), label: '操作日志', title: 'Logs' },
+  { key: 'DataGet', icon: () => h(DownloadOutlined), label: '下载增量', title: 'DataGet' },
+  { key: 'DataUpdate', icon: () => h(UploadOutlined), label: '更新增量', title: 'DataUpdate' },
 ]);
 
 onMounted(() => {
-    state.selectedKeys = [route.name];
+  state.selectedKeys = [route.name];
 })
 
 function handleClick({ item }) {
-    router.push({ name: item.title })
+  router.push({ name: item.title })
 }
 </script>
-<template>
-    <div class="w-[100%] h-[100%] flex">
-        <div class="w-[226px] h-[100%]">
-            <div @click="router.push({ name: 'home' })"
-                class="box-border p-5 h-[60px] cursor-pointer flex items-center justify-center bg-[#FFF] text-[#3c3c3c]">
-                <SvgIcon class="mr-2" icon="logo" width="60" height="60" />
-                <h2 class="text-[#242936] font-bold">后台管理系统</h2>
-            </div>
-            <a-menu class="h-[calc(100%-60px)]" @click="handleClick" v-model:selectedKeys="state.selectedKeys"
-                mode="inline" :items="items"></a-menu>
-        </div>
 
-        <div class="scrollbar w-[calc(100%-226px)] m-3 p-3 bg-[#fff]  overflow-y-scroll">
-            <Suspense>
-                <RouterView />
-            </Suspense>
-        </div>
+<template>
+  <div class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <div class="w-64 bg-white shadow-lg">
+      <!-- Logo -->
+      <div @click="router.push({ name: 'home' })"
+           class="h-16 flex items-center justify-center bg-gradient-to-r from-blue-500 to-indigo-600 cursor-pointer transition-all duration-300 hover:from-blue-600 hover:to-indigo-700">
+        <SvgIcon class="mr-2" icon="logo" width="40" height="40" />
+        <h2 class="text-white font-bold text-xl">后台管理系统</h2>
+      </div>
+      <!-- Menu -->
+      <a-menu
+          class="h-[calc(100%-4rem)] border-r-0"
+          @click="handleClick"
+          v-model:selectedKeys="state.selectedKeys"
+          mode="inline"
+          :items="items"
+      >
+        <template #icon="{ icon }">
+          <component :is="icon" class="text-gray-600" />
+        </template>
+      </a-menu>
     </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 overflow-hidden">
+      <!-- Top Bar -->
+      <div class="h-16 bg-white shadow-sm flex items-center px-6">
+        <h1 class="text-xl font-semibold text-gray-800">{{ route.name }}</h1>
+      </div>
+      <!-- Content Area -->
+      <div class="p-6 h-[calc(100%-4rem)] overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-sm p-6">
+          <Suspense>
+            <RouterView />
+            <template #fallback>
+              <div class="flex justify-center items-center h-64">
+                <a-spin size="large" />
+              </div>
+            </template>
+          </Suspense>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.a-menu {
+  @apply text-gray-600;
+}
 
+.a-menu-item {
+  @apply transition-colors duration-200;
+}
+
+.a-menu-item:hover {
+  @apply bg-blue-50 text-blue-600;
+}
+
+.a-menu-item-selected {
+  @apply bg-blue-100 text-blue-600 font-medium;
+}
+
+/* Custom scrollbar styles */
+.overflow-y-auto {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E0 #EDF2F7;
+}
+
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #EDF2F7;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background-color: #CBD5E0;
+  border-radius: 4px;
+}
 </style>

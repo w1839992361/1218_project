@@ -14,12 +14,14 @@ const route = useRoute();
 const router = useRouter();
 
 import { getTagsById } from "@/api/other";
+import {useVideosInfo} from "@/stores/video.js";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + "/api/covers/stream/";
 const menuItems = ref([]);
 const title = ref('');
 const resources = ref([]);
+const videoInfo = useVideosInfo();
 
 async function getList() {
   const { data, code } = await getTagsById(route.query.id);
@@ -98,7 +100,7 @@ const handleCardClick = (re) => {
               </p>
 
               <div class="mt-2 text-sm text-gray-500">
-                浏览数：{{ resource.viewNum ?? 0 }}
+                浏览数：{{  videoInfo.getVideoData(resource.id)?.views }}
               </div>
             </div>
           </div>
