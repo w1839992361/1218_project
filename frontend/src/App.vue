@@ -25,14 +25,16 @@ router.beforeEach(async (to, from, next) => {
            next();
            return;
        }
-       const user = await getInfo();
-       userStore.setUserInfo(user.data);
-       const userRole = user.data.role;
-       if (protectedRoutes.includes(to.path) && !(userRole === 'root' || userRole === 'admin')) {
-           next('/login');
-       } else {
-           next();
-       }
+     // 记得删除 TODO
+     next();
+       // const user = await getInfo();
+       // userStore.setUserInfo(user.data);
+       // const userRole = user.data.role;
+       // if (protectedRoutes.includes(to.path) && !(userRole === 'root' || userRole === 'admin')) {
+       //     next('/login');
+       // } else {
+       //     next();
+       // }
    } catch (error) {
        if (to.path !== '/login') {
            next('/login');

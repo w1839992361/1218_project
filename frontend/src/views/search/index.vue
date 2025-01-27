@@ -72,8 +72,9 @@ const handleSearch = async (page = 1) => {
   }
 }
 
-const handlePageChange = (page) => {
-  pagination.value.current = page
+const handlePageChange = (page,size) => {
+  pagination.value.current = page;
+  pagination.value.pageSize = size;
   handleSearch(page)
 }
 

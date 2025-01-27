@@ -98,7 +98,7 @@ onMounted(loadFilePreview);
                       v-else-if="fileType === 'xlsx' || fileType === 'xls'" :src="props.fileUrl"
                       class="h-[100%] w-[100%]"/>
 
-    <div v-else-if="fileType === 'mp4'" class="h0-[100%]">
+    <div v-else-if="fileType === 'mp4'" class="h-[100%]">
       <video @canplay="renderedHandler" controls width="100%" class="h-[100%]">
         <source :src="props.fileUrl"/>
         您的浏览器不支持视频播放。

@@ -81,7 +81,6 @@ const addResetForm = () => {
 const addClassDialog = ref(false);
 const addClassResFormRef = ref();
 const addClassResForm = reactive({
-  level: "",
   name: "",
   parentId: "",
   description: "",
@@ -109,6 +108,7 @@ const handleAddClass = () => {
 const handleAddClassSubmit = () => {
   addClassResFormRef.value.validate().then(async () => {
     console.log(toRaw(addClassResForm))
+    // TODO
   })
 }
 
@@ -195,57 +195,6 @@ const columResFormRules = {
 
 
 
-// add 册次
-const addVolumeDialog = ref(false);
-const addVolumeResFormRef = ref();
-const addVolumeResForm = reactive({
-  name: "",
-  parentId: "",
-  description: "",
-  code: "",
-});
-const addVolumeResFormRules = {
-  name: [{required: true, message: "必须输入册次", trigger: "change"}],
-  description: [{required: true, message: "必须输入册次描述", trigger: "change"}],
-  code: [{required: true, message: "必须输入资源编码", trigger: "change"}],
-};
-const handleAddVolumeSubmit  = (v)=>{
-  addVolumeResFormRef.value.validate().then(async () => {
-    addVolumeResForm.parentId = pid.value;
-    console.log(toRaw(addVolumeResForm))
-  })
-}
-const addVolumeResetForm  = (v)=>{
-  addVolumeResFormRef.value.resetFields();
-  addVolumeDialog.value = false;
-}
-
-// add 版本
-const addVersionDialog = ref(false);
-const addVersionResFormRef = ref();
-const addVersionResForm = reactive({
-  name: "",
-  parentId: "",
-  description: "",
-  code: "",
-});
-const addVersionResFormRules = {
-  name: [{required: true, message: "必须输入版本", trigger: "change"}],
-  description: [{required: true, message: "必须输入版本描述", trigger: "change"}],
-  code: [{required: true, message: "必须输入资源编码", trigger: "change"}],
-};
-const handleAddVersionSubmit  = (v)=>{
-  addVersionResFormRef.value.validate().then(async () => {
-    addVersionResForm.parentId = pid.value;
-    console.log(toRaw(addVersionResForm))
-  })
-}
-const addVersionResetForm  = (v)=>{
-  addVersionResFormRef.value.resetFields();
-  addVersionDialog.value = false;
-}
-
-
 </script>
 <template>
   <a-row class="h-[100%]" :gutter="16">
@@ -316,16 +265,6 @@ const addVersionResetForm  = (v)=>{
                添加课程
               </a-button>
             </a-col>
-            <a-col :span="3">
-              <a-button type="primary" :disabled="pid===null" @click="addVersionDialog = true">
-                添加版本
-              </a-button>
-            </a-col>
-            <a-col :span="3">
-              <a-button type="primary" :disabled="pid===null" @click="addVolumeDialog = true">
-                添加册次
-              </a-button>
-            </a-col>
           </a-row>
         </a-form>
 
@@ -368,62 +307,6 @@ const addVersionResetForm  = (v)=>{
       </a-form-item>
       <a-form-item label="资源编码" name="code">
         <a-input v-model:value="addResForm.code"/>
-      </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <!--  添加版本-->
-  <a-modal
-      v-model:open="addVersionDialog"
-      title="添加版本"
-      ok-text="添加"
-      @cancel="addVersionResetForm"
-      cancel-text="取消"
-      @ok="handleAddVersionSubmit"
-  >
-    <a-form
-        ref="addVersionResFormRef"
-        :model="addVersionResForm"
-        :rules="addVersionResFormRules"
-        :label-col="{ span: 5 }"
-        :wrapper-col="{ span: 13 }"
-    >
-      <a-form-item label="版本" name="name">
-        <a-input v-model:value="addVersionResForm.name"/>
-      </a-form-item>
-      <a-form-item label="版本描述" name="description">
-        <a-input v-model:value="addVersionResForm.description"/>
-      </a-form-item>
-      <a-form-item label="资源编码" name="code">
-        <a-input v-model:value="addVersionResForm.code"/>
-      </a-form-item>
-    </a-form>
-  </a-modal>
-
-  <!--  添加册次-->
-  <a-modal
-      v-model:open="addVolumeDialog"
-      title="添加册次"
-      ok-text="添加"
-      @cancel="addVolumeResetForm"
-      cancel-text="取消"
-      @ok="handleAddVolumeSubmit"
-  >
-    <a-form
-        ref="addVolumeResFormRef"
-        :model="addVolumeResForm"
-        :rules="addVolumeResFormRules"
-        :label-col="{ span: 5 }"
-        :wrapper-col="{ span: 13 }"
-    >
-      <a-form-item label="册次" name="name">
-        <a-input v-model:value="addVolumeResForm.name"/>
-      </a-form-item>
-      <a-form-item label="册次描述" name="description">
-        <a-input v-model:value="addVolumeResForm.description"/>
-      </a-form-item>
-      <a-form-item label="资源编码" name="code">
-        <a-input v-model:value="addVolumeResForm.code"/>
       </a-form-item>
     </a-form>
   </a-modal>
