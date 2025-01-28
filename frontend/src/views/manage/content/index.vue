@@ -12,21 +12,24 @@ import {
   getVideoInfo,
   uploadDocs,
 } from "@/api/admin/content";
-import {getTagInfoById, getTagsByParentId} from "@/api/other";
+import {getTagInfoById, getTagsByParentId, getTagsById} from "@/api/other";
 import {message} from "ant-design-vue";
-import {UploadOutlined, MoreOutlined} from "@ant-design/icons-vue";
+import {UploadOutlined, MoreOutlined, LoadingOutlined, PlusOutlined} from "@ant-design/icons-vue";
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const treeData = ref([]);
+const expandedKeys = ref([]);
+const selectedKeys = ref([]);
 const leftLoading = ref(true);
-const isLoading = ref(true);
 
 function transformNode(node, level = 1, maxLevel = 3) {
   const {id, name, children, ...rest} = node;
   return {
     key: id,
     title: {name, ...rest, id, children},
+    name: name,
+    id: id,
     children: (children && level < maxLevel)
         ? children.map((child) => transformNode(child, level + 1, maxLevel))
         : null,
@@ -37,6 +40,9 @@ async function getList() {
   leftLoading.value = true;
   const {data} = await getAllTree(1);
   treeData.value = data.map((item) => transformNode(item));
+  if (current.value) {
+    handleClick(current.value);
+  }
   leftLoading.value = false;
 }
 
@@ -60,11 +66,11 @@ const addResFormRules = {
 const onSubmit = () => {
   addResFormRef.value.validate().then(async () => {
 
-    // const {data} = await getTagInfoById(addResForm.parentId);
-    // const p_code = data?.code || '';
+    const {data} = await getTagInfoById(addResForm.parentId);
+    const p_code = data?.code || '';
     // addResForm.code = p_code + addResForm.code;
     const {code} = await addTree(toRaw(addResForm));
-    if (code == 200) {
+    if (code === 200) {
       message.success("添加成功!");
       addResetForm();
       getList();
@@ -80,15 +86,21 @@ const addResetForm = () => {
 // add
 const addClassDialog = ref(false);
 const addClassResFormRef = ref();
+const ClassOptions = ref([]);
 const addClassResForm = reactive({
-  level: "",
   name: "",
   parentId: "",
   description: "",
   code: "",
-  version: "",
-  number: ""
+  level: 7,
 });
+const handleClassSelectChange = async (v) => {
+  const {data} = await getTagsById(v[v.length - 1]);
+  if (data[0]?.children?.length > 0) {
+    addClassResForm.parentId = '';
+    return message.warn('该册次已有课程!');
+  }
+};
 const addClassResFormRules = {
   parentId: [
     {required: true, message: "", trigger: "change"},
@@ -110,19 +122,30 @@ const addClassResFormRules = {
   version: [{required: true, message: "必须输入课程版本", trigger: "change"}],
   number: [{required: true, message: "必须输入课程册次", trigger: "change"}],
 };
-
 const addClassResetForm = () => {
   addClassResFormRef.value.resetFields();
   addClassDialog.value = false;
 }
-
-const handleAddClass = () => {
+const handleAddClass = async () => {
+  const p = pid.value;
+  const {data} = await getTagsById(p);
+  if (!data[0].children) return message.warn('请先添加学科&版本&册次');
+  ClassOptions.value = data[0].children.map(v => transformNode(v));
   addClassDialog.value = true;
 }
-
 const handleAddClassSubmit = () => {
   addClassResFormRef.value.validate().then(async () => {
-    console.log(toRaw(addClassResForm))
+    const lastParentId = addClassResForm.parentId[addClassResForm.parentId.length - 1];
+    const payload = {
+      ...toRaw(addClassResForm),
+      parentId: lastParentId,
+    };
+    const {code} = await addTree(payload);
+    if (code === 200) {
+      addClassDialog.value = false;
+      getList();
+      addClassResetForm();
+    }
   })
 }
 
@@ -136,35 +159,54 @@ async function handleDelete(id) {
   }
 }
 
+
+// 通用递归方法，提取指定 level 的节点子项
+const extractLevelData = (nodes, targetLevel = 6) => {
+  if (!nodes || !Array.isArray(nodes)) return [];
+
+  return nodes.reduce((acc, node) => {
+    if (node.level === targetLevel && node.children) {
+      // 当前节点符合目标 level，添加其子节点
+      acc = acc.concat(node.children);
+    }
+    // 递归处理子节点
+    if (node.children) {
+      acc = acc.concat(extractLevelData(node.children, targetLevel));
+    }
+    return acc;
+  }, []);
+};
+
+// 提取所有年级中的 level 6 节点子项
+const extractAllLevel6Children = (nodes) => {
+  if (!nodes || !Array.isArray(nodes)) return [];
+
+  return nodes.reduce((acc, node) => {
+    // 提取 level 6 的子节点
+    acc.push(...extractLevelData(node.children, 6));
+    return acc;
+  }, []);
+};
+
 const editClassDialog = ref(false);
 const pid = ref(null);
-const handleClick = (v) => {
+const current = ref(null);
+const handleClick = async (v) => {
   tableData.value = [];
+  current.value = null;
   pid.value = null;
   if (v.level <= 1) return;
-
+  const {data} = await getTagsById(v.id);
+  current.value = v;
   if (v.level === 2) {
 
-    let arr = v.children?.map(item => {
-      return item.children && [...item.children];
-    }).flat(Infinity).filter(v => v).map(v => {
-      return {
-        ...v,
-        children: null
-      }
-    });
-    tableData.value = arr ? arr : [];
+    tableData.value = extractAllLevel6Children(data);
     return;
   }
 
 
   pid.value = v.id;
-  tableData.value = v.children?.map(v => {
-    return {
-      ...v,
-      children: null
-    }
-  });
+  tableData.value = extractLevelData(data, 6);
 }
 const tableData = ref([]);
 const columns = [
@@ -232,6 +274,7 @@ const addSubjectResForm = reactive({
   parentId: "",
   description: "",
   code: "",
+  level: 4
 });
 const addSubjectResFormRules = {
   name: [{required: true, message: "必须输入学科", trigger: "change"}],
@@ -242,7 +285,6 @@ const addSubjectResFormRules = {
 const handleAddSubject = async () => {
   let p = pid.value;
   const {data} = await getTagsByParentId(p);
-  console.log(data)
   subjectTable.value = data;
   addSubjectDialog.value = true;
 }
@@ -305,6 +347,7 @@ const addVersionResForm = reactive({
   parentId: "",
   description: "",
   code: "",
+  level: 5
 });
 const subjectOptions = ref([]);
 const addVersionResFormRules = {
@@ -316,6 +359,9 @@ const addVersionResFormRules = {
 const handleAddVersion = async () => {
   let p = pid.value;
   const {data} = await getTagsByParentId(p);
+  if (data?.length === 0) {
+    return message.warn('请先添加学科！');
+  }
   subjectOptions.value = data;
   addVersionDialog.value = true;
 }
@@ -385,6 +431,7 @@ const addVolumeResForm = reactive({
   parentId: "",
   description: "",
   code: "",
+  level: 6
 });
 const SubjectOptions = ref([]);
 const handleVolumeSelectChange = async (v) => {
@@ -403,7 +450,6 @@ const handleAddVolume = async () => {
         };
       })
   );
-  console.log(SubjectOptions)
   addVolumeDialog.value = true;
 }
 const addVolumeResFormRules = {
@@ -454,13 +500,158 @@ const handleVolumeDelete = async (id) => {
 const addVolumeResetForm = (v) => {
   addVolumeResFormRef.value.resetFields();
   addVolumeDialog.value = false;
+  volumeTable.value = [];
 }
+
+
+// edit
+const editDialog = ref(false);
+const editResFormRef = ref();
+const editResForm = reactive({
+  level: null,
+  name: null,
+  parentId: null,
+  description: null,
+  code: null,
+  videoUuid: "",
+  coverUuid: "",
+  docsUuid: "",
+  resourceUuid: "",
+});
+const editResFormRules = {
+  name: [{required: true, message: "必须输入一个节点名字", trigger: "change"}],
+};
+const editResetForm = () => {
+  editResFormRef.value.resetFields();
+  editDialog.value = false;
+};
+const isXueke = ref(false);
+
+function handleEdit(item) {
+  // isXueke.value = findTopLevelNode(treeData.value, item.id,'学科课程')?.title?.name === '学科课程' || item.name ==='学科课程' ;
+  Object.assign(editResForm, {...item});
+  editDialog.value = true;
+}
+
+function handleEditSubmit() {
+  editResFormRef.value.validate().then(async () => {
+    const {videoUuid, coverUuid, docsUuid, id} = toRaw(editResForm);
+    const payload = {
+      videoUuid: videoUuid ?? "",
+      coverUuid: coverUuid ?? "",
+      docsUuid: docsUuid ?? "",
+    };
+    const {code} = await updateTree(payload, id);
+    if (code == 200) {
+      message.success("编辑成功!");
+      editResetForm();
+      getList();
+    }
+  });
+}
+
+
+// 封面上传
+// common ↓
+const fileList = ref([]);
+// cover
+const coverDialog = ref(false);
+const coverResFormRef = ref();
+const previewImg = ref("");
+const coverLoading = ref(false);
+const coverResForm = reactive({
+  title: "",
+  description: "",
+  coverFile: "",
+});
+const coverResFormRules = {
+  title: [{required: true, message: "必须输入标题", trigger: "change"}],
+  description: [{required: true, message: "必须输入描述", trigger: "change"}],
+  coverFile: [{required: true, message: "必须上传封面", trigger: ["blur"]}],
+};
+
+function handleCoverChange({file}) {
+  fileList.value = [];
+  console.log(file);
+  coverResForm.coverFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  return false;
+  // if (e.file.status === "done") {
+  //     let file = e.file.response.data;
+  //     coverResForm.coverFile = file;
+  //     previewImg.value = baseUrl + '/api/covers/stream/' + file;
+  // }
+}
+
+function handleCoverSubmit() {
+  coverResFormRef.value.validate().then(async () => {
+    const {title, description} = toRaw(coverResForm);
+    const formData = new FormData();
+    console.log(coverResForm.coverFile);
+    formData.append("coverFile", coverResForm.coverFile);
+    const {code, data} = await uploadCover({title, description}, formData);
+    if (code == 200) {
+      editResForm.coverUuid = data;
+      if (!editResForm.resourceUuid) {
+        const {videoUuid, coverUuid, docsUuid, id} = toRaw(editResForm);
+        const payload = {
+          videoUuid: videoUuid ?? "",
+          coverUuid: coverUuid ?? "",
+          docsUuid: docsUuid ?? "",
+        };
+        await updateTree(payload, id);
+      }
+      message.success("添加成功!");
+      coverDialog.value = false;
+      coverResetForm();
+      getList();
+    }
+  });
+}
+
+function handleUploadCover(id) {
+  coverDialog.value = true;
+}
+
+const coverResetForm = () => {
+  coverResFormRef.value.resetFields();
+  coverDialog.value = false;
+  previewImg.value = false;
+};
+
+
+// 单元设置
+const editClassUnitDialog = ref(false);
+const editClassUnitResFormRef = ref();
+const editClassUnitResForm = reactive({
+  name: "",
+  parentId: "",
+  description: "",
+  code: "",
+  level: 8
+});
+const handleUtil = (v) => {
+  editClassUnitResForm.parentId = v.id;
+  editClassUnitDialog.value = true;
+}
+const handleClassUnitFormSubmit = async () => {
+
+}
+const editClassUnitForm = () => {
+  // editClassUnitResFormRef.value.resetFields();
+  editClassUnitDialog.value = false;
+};
 </script>
 <template>
   <a-row class="h-[100%]" :gutter="16">
     <a-col :span="4" class="h-[100%] ">
       <a-card class="h-[100%] overflow-x-auto" :loading="leftLoading">
-        <a-tree showLine blockNode :tree-data="treeData">
+        <a-tree showLine blockNode :tree-data="treeData" v-model:expandedKeys="expandedKeys"
+                v-model:selectedKeys="selectedKeys">
           <template #title="{ key: treeKey, title }">
             <a-dropdown :trigger="['contextmenu']" @click="handleClick(title)">
               <div class="w-[100%] flex justify-between">
@@ -551,7 +742,8 @@ const addVolumeResetForm = (v) => {
               <a-button class="mr-2" size="small" type="link">{{ text }}</a-button>
             </template>
             <template v-if="column.dataIndex === 'operation'">
-              <a-button class="mr-2" size="small">编辑</a-button>
+              <a-button class="mr-2" size="small" type="link" @click="handleEdit(record)">编辑</a-button>
+              <a-button class="mr-2" size="small" type="link" @click="handleUtil(record)">单元设置</a-button>
             </template>
           </template>
         </a-table>
@@ -761,8 +953,15 @@ const addVolumeResetForm = (v) => {
         :label-col="{ span: 5 }"
         :wrapper-col="{ span: 13 }"
     >
-      <a-form-item label="课程名字" name="parentId">
-        <a-input v-model:value="addClassResForm.parentId"/>
+      <a-form-item label="册次" name="parentId">
+        <a-cascader
+            v-model:value="addClassResForm.parentId"
+            :options="ClassOptions"
+            @change="handleClassSelectChange"
+            showSearch
+            :change-on-select="false"
+            :field-names="{ label: 'name', value: 'id'}"
+        />
       </a-form-item>
       <a-form-item label="课程名字" name="name">
         <a-input v-model:value="addClassResForm.name"/>
@@ -773,32 +972,145 @@ const addVolumeResetForm = (v) => {
       <a-form-item label="资源编码" name="code">
         <a-input v-model:value="addClassResForm.code"/>
       </a-form-item>
-      <!--      <a-form-item label="学科" name="version">-->
-      <!--        <a-input v-model:value="addClassResForm.version"/>-->
-      <!--      </a-form-item>-->
-      <!--      <a-form-item label="课程版本" name="version">-->
-      <!--        <a-input v-model:value="addClassResForm.version"/>-->
-      <!--      </a-form-item>-->
-      <!--      <a-form-item label="课程册次" name="number">-->
-      <!--        <a-input v-model:value="addClassResForm.number"/>-->
-      <!--      </a-form-item>-->
     </a-form>
 
   </a-modal>
 
+  <!--  编辑课程-->
   <a-modal
-      v-model:open="editClassDialog"
-      title="添加资源节点"
-      ok-text="添加"
+      v-model:open="editDialog"
+      title="编辑资源节点"
+      ok-text="确定"
+      @cancel="editResetForm"
+      cancel-text="取消"
+      @ok="handleEditSubmit"
+  >
+    <a-form
+        ref="editResFormRef"
+        :model="editResForm"
+        :rules="editResFormRules"
+        :label-col="{ span: 5 }"
+        :wrapper-col="{ span: 13 }"
+    >
+      <a-form-item label="节点名字" name="name">
+        <a-input disabled v-model:value="editResForm.name"/>
+      </a-form-item>
+      <a-form-item label="节点描述" name="description">
+        <a-input disabled v-model:value="editResForm.description"/>
+      </a-form-item>
+      <a-form-item label="资源编码" name="code">
+        <a-input disabled v-model:value="editResForm.code"/>
+      </a-form-item>
+      <a-form-item
+          label="资源封面"
+          name="code"
+          @click="handleUploadCover(editResForm.coverUuid)"
+      >
+        <a-button type="primary">
+          <template #icon>
+            <UploadOutlined/>
+          </template>
+          {{ Boolean(editResForm.coverUuid) ? "重新" : "" }}上传
+        </a-button>
+      </a-form-item>
+      <!--      <template v-if="editResForm.coverUuid && editResForm.resourceUuid">-->
+      <!--        <a-form-item label="视频资源" name="videoUuid">-->
+      <!--          <a-button type="primary" @click="handleUploadVideo(editResForm.resourceUuid)">-->
+      <!--            <template #icon>-->
+      <!--              <UploadOutlined />-->
+      <!--            </template>-->
+      <!--            上传-->
+      <!--          </a-button>-->
+      <!--          <a-button-->
+      <!--              class="ml-2"-->
+      <!--              type="primary"-->
+      <!--              @click="handleViewVideos(editResForm.resourceUuid)"-->
+      <!--          >-->
+      <!--            <template #icon>-->
+      <!--              <UploadOutlined />-->
+      <!--            </template>-->
+      <!--            查看已上传-->
+      <!--          </a-button>-->
+      <!--        </a-form-item>-->
+      <!--        <a-form-item v-if="isXueke" label="学习清单" name="docsUuid">-->
+      <!--          <a-button type="primary" @click="handleUploadDocs(editResForm.resourceUuid)">-->
+      <!--            <template #icon>-->
+      <!--              <UploadOutlined />-->
+      <!--            </template>-->
+      <!--            上传-->
+      <!--          </a-button>-->
+      <!--          <a-button-->
+      <!--              class="ml-2"-->
+      <!--              type="primary"-->
+      <!--              @click="handleViewDocs(editResForm.resourceUuid)"-->
+      <!--          >-->
+      <!--            <template #icon>-->
+      <!--              <UploadOutlined />-->
+      <!--            </template>-->
+      <!--            查看已上传-->
+      <!--          </a-button>-->
+      <!--        </a-form-item>-->
+      <!--      </template>-->
+    </a-form>
+  </a-modal>
+
+
+  <!--  封面上传-->
+  <!-- cover -->
+  <a-modal
+      v-model:open="coverDialog"
+      title="上传封面"
+      ok-text="确定"
+      @cancel="coverResetForm"
+      cancel-text="取消"
+      @ok="handleCoverSubmit"
+  >
+    <a-form
+        ref="coverResFormRef"
+        :model="coverResForm"
+        :rules="coverResFormRules"
+        :label-col="{ span: 5 }"
+        :wrapper-col="{ span: 13 }"
+    >
+      <a-form-item label="封面标题" name="title">
+        <a-input v-model:value="coverResForm.title"/>
+      </a-form-item>
+      <a-form-item label="封面描述" name="description">
+        <a-input v-model:value="coverResForm.description"/>
+      </a-form-item>
+      <a-form-item label="封面" name="coverFile">
+        <a-upload
+            :customRequest="handleCoverChange"
+            accept=".png,.jpg"
+            v-model:file-list="fileList"
+            name="coverFile"
+            list-type="picture-card"
+            class="avatar-uploader"
+            :show-upload-list="false"
+        >
+          <img v-if="previewImg" :src="previewImg" alt="avatar"/>
+          <div v-else>
+            <loading-outlined v-if="coverLoading"></loading-outlined>
+            <plus-outlined v-else></plus-outlined>
+            <div class="ant-upload-text">上传</div>
+          </div>
+        </a-upload>
+      </a-form-item>
+    </a-form>
+  </a-modal>
+
+  <!--  单元设置-->
+  <a-modal
+      v-model:open="editClassUnitDialog"
+      title="编辑课程单元"
+      ok-text="确定"
       width="100%"
       wrap-class-name="full-modal"
-      @cancel="addResetForm"
+      @cancel="editClassUnitForm"
       cancel-text="取消"
-      @ok="onSubmit"
+      @ok="editClassUnitForm"
   >
-    <p>Some contents...</p>
-    <p>Some contents...</p>
-    <p>Some contents...</p>
+
   </a-modal>
 </template>
 
