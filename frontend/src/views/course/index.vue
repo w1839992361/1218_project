@@ -53,7 +53,6 @@ const selectedId = ref();
 const currentClassify = ref();
 const classifyData = ref([]);
 const videos = ref();
-const allresourceUuid = ref();
 const pageLoading = ref(true);
 const classLoading = ref(true);
 const isLoading = ref(true);
@@ -71,33 +70,9 @@ async function getPages(id) {
   const {data, code} = await getTagsById(id);
   if (code === 200 && data.length) {
     sections.value = data[0]?.children || [];
-    if (sections.value.length) {
-      allresourceUuid.value = sections.value.map((unit) => ({
-        id: unit.id,
-        name: unit.name,
-        resourceUuids: extractResourceUuids(unit.children),
-      }));
-      pageLoading.value = false;
-    }
+    videoInfo.incrementViews(sections.value[0]?.id)
+    pageLoading.value = false;
   }
-}
-
-function extractResourceUuids(nodes) {
-  let uuids = [];
-
-  function traverse(node) {
-    if (node.resourceUuid) {
-      uuids.push(node.resourceUuid);
-    }
-    if (node.children && node.children.length > 0) {
-      node.children.forEach((child) => traverse(child));
-    }
-  }
-
-  if (nodes && nodes.length) {
-    nodes.forEach((node) => traverse(node));
-  }
-  return uuids;
 }
 
 function handleClassifyChange(item) {
@@ -121,23 +96,36 @@ function handleExtensions(item) {
   router.push({name: "courseExtendDetail", query: {...item}});
 }
 
+const currentUtil = ref([]);
+
 async function handleCollapseChange(id) {
   isLoading.value = true;
-  let currentResourceUuids = allresourceUuid.value.find((u) => u.id == id)?.resourceUuids;
-  if (currentResourceUuids && currentResourceUuids.length) {
-    let videosMapping = await Promise.all(
-        currentResourceUuids.map(async (uuid) => {
-          let videos = await getVideos(uuid);
-          isLoading.value = false;
-          return {[uuid]: videos};
-        })
-    );
+  currentUtil.value = [];
+  let {data} = await getTagsById(id);
+  let arr = data[0]?.children ?? [];
 
-    videos.value = Object.assign({}, ...videosMapping);
-  } else {
-    isLoading.value = false;
-    videos.value = {};
-  }
+  let videosMapping = await Promise.all(
+      arr.map(async (item) => {
+        let videos = await getVideos(item.resourceUuid);
+
+        // 使用 Promise.all 解析每个视频的信息
+        videos = await Promise.all(
+            videos.map(async (v) => {
+              let {data} = await getVideoInfo(v.id);
+              return {
+                ...data,
+              };
+            })
+        );
+
+        return {
+          ...item,
+          videos,
+        };
+      })
+  );
+  isLoading.value = false;
+  currentUtil.value = videosMapping;
 }
 
 async function getVideos(uuid) {
@@ -155,13 +143,7 @@ async function getVideos(uuid) {
   }
 }
 
-function getVideosByUid(uid) {
-  if (videos.value?.[uid]) {
-    return videos.value[uid];
-  } else {
-    return [];
-  }
-}
+
 </script>
 
 <template>
@@ -190,32 +172,39 @@ function getVideosByUid(uid) {
   </a-card>
 
   <template v-if="selectedKeys[0] === '学科课程'">
-    <a-card v-if="sections.length" :loading="pageLoading" title="目录" class="pages">
-      <p class="text-[20px] font-bold mb-3">基础课程</p>
-      <a-row :gutter="16">
-        <a-col :span="6">
-          <a-image
-              :width="200"
-              :src="imgUrl + sections[0]?.coverUuid"
-              :preview="false"
-          />
-        </a-col>
-        <a-col :span="18">
-          <p class="text-2xl">{{ sections[0].name }}</p>
-          <p class="text-2xl">{{ sections[0].description }}</p>
-          <p class="text-[#9ea4bc]">
-            <EyeOutlined/>
-            {{ videoInfo.getVideoData(sections[0].id).views }} 浏览量
-          </p>
-        </a-col>
-      </a-row>
+    <a-card v-if="sections.length" :loading="pageLoading" class="course-card">
+      <template #title>
+        <h2 class="text-2xl font-bold">课程目录</h2>
+      </template>
+
+      <div class="course-header">
+        <h3 class="text-xl font-semibold mb-4">基础课程</h3>
+        <a-row :gutter="50" >
+          <a-col :span="4">
+            <a-image
+                :width="200"
+                :src="imgUrl + sections[0]?.coverUuid"
+                :preview="false"
+                class="rounded-lg shadow-md"
+            />
+          </a-col>
+          <a-col :span="16">
+            <h4 class="text-2xl font-bold mb-2">{{ sections[0].name }}</h4>
+            <p class="text-lg text-gray-600 mb-4">{{ sections[0].description }}</p>
+              <eye-outlined />
+              <span class="ml-1 text-lg text-gray-600">{{ videoInfo.getVideoData(sections[0].id).views }} 浏览量</span>
+          </a-col>
+        </a-row>
+      </div>
+
       <a-collapse
+          v-if="sections[0]?.children?.length > 0"
           v-model:activeKey="currentKeys"
           :bordered="false"
           accordion
-          v-if="sections[0]?.children?.length>0"
           @change="handleCollapseChange"
           expand-icon-position="end"
+          class="mt-8"
       >
         <a-collapse-panel
             v-for="collapse in sections[0].children"
@@ -223,68 +212,35 @@ function getVideosByUid(uid) {
             :header="collapse.name"
         >
           <template #extra>
-            <a-button type="primary" style="pointer-events: none" shape="round">
-              10课时
+            <a-button type="primary" @click.stop="download(collapse)" class="download-btn">
+              <download-outlined /> 打包下载
             </a-button>
           </template>
-          <!-- 遍历每个部分 -->
-          <a-row :gutter="16">
-            <!-- 遍历每个部分 -->
-            <a-col
-                :span="24"
-                v-for="section in collapse.children"
-                :key="section.key"
-                class="section"
-            >
-              <!-- 部分标题 -->
-              <a-row :gutter="16" class="flex justify-between items-center">
-                <a-col>
-                  <h3 class="text-xl">
-                    {{ section.name }}
-                  </h3>
-                </a-col>
-                <a-col>
-                  <a-button type="text" @click="download(section)"> 打包下载</a-button>
-                </a-col>
-              </a-row>
 
-              <a-spin v-if="isLoading" :spinning="isLoading"></a-spin>
-
-              <div
-                  v-else
-                  v-for="page in section.children"
-                  :key="page.id"
-                  class="flex justify-between bg-gray-50 px-4 py-2"
-              >
-                <!-- 左侧内容区域 - 允许换行 -->
-                <div class="flex flex-wrap items-center gap-4 flex-1">
-                  <div class="flex items-center">
-                    {{ page.name }}
-                  </div>
-
+          <a-spin :spinning="isLoading">
+            <template v-if="!isLoading">
+              <div v-for="section in currentUtil" :key="section.id" class="section-item">
+                <h5 class="text-lg font-semibold mb-2">{{ section.name }}</h5>
+                <a-space wrap>
                   <a-button
-                      class="flex items-center"
-                      @click.stop="handleSingleClick(page)"
-                      v-for="video in getVideosByUid(page.resourceUuid)"
+                      v-for="video in section.videos"
                       :key="video.id"
+                      @click.stop="handleSingleClick(section)"
+                      type="default"
+                      shape="round"
+                      class="video-btn"
                   >
+                    <template #icon><play-circle-outlined /></template>
                     {{ video.title }}
-                    <PlayCircleOutlined class="ml-1 text-gray-400"/>
                   </a-button>
-                </div>
-
-                <!-- 右侧下载按钮 - 固定位置 -->
-                <a-button @click="download(section)" type="text" class="text-gray-500 ml-4 shrink-0 flex items-center">
-                  下载
-                </a-button>
+                </a-space>
               </div>
-            </a-col>
-          </a-row>
+            </template>
+          </a-spin>
         </a-collapse-panel>
       </a-collapse>
     </a-card>
-    <a-empty v-else :description="null"/>
-
+    <a-empty v-else />
   </template>
 
   <template v-if="selectedKeys[0] === '拓展课程'">
@@ -393,5 +349,39 @@ function getVideosByUid(uid) {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.course-card {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.course-header {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.section-item {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.video-btn {
+  margin-bottom: 8px;
+}
+
+.download-btn {
+  font-weight: 500;
+}
+
+:deep(.ant-collapse-header) {
+  font-weight: 600;
+}
+
+:deep(.ant-collapse-content-box) {
+  padding-top: 16px !important;
 }
 </style>

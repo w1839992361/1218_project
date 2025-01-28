@@ -4,12 +4,33 @@ import {SearchOutlined} from '@ant-design/icons-vue'
 import {searchVideo} from '@/api/search'
 import {useRouter, useRoute} from 'vue-router';
 import {message} from 'ant-design-vue';
+import Classify from "@/components/classify/index.vue";
+import {getTagsById} from "@/api/other.js";
 
 const searchType = ref('all')
 const searchQuery = ref('')
 const currentTab = ref('1')
 const loading = ref(false)
 
+const classLoading = ref(true);
+const classifyData = ref([]);
+const selectedId = ref();
+const currentClassify = ref();
+async function getClassifyData(id = 3) {
+  const {data, code} = await getTagsById(id);
+  if (code === 200) {
+    classifyData.value = data[0].children;
+    selectedId.value = (+route?.query?.courseClass) ?? null;
+    console.log(selectedId)
+    classLoading.value = false;
+  }
+}
+function handleClassifyChange(item) {
+  currentClassify.value = item;
+  console.log(item)
+  item?.id && handleSearch(1,item?.id);
+  router.push({name: 'search', query: {keyword:route.query.keyword, courseClass: item?.id}})
+}
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + '/api/videos/cover/';
 
@@ -39,17 +60,19 @@ const pagination = ref({
   total: 0
 })
 
-const handleSearch = async (page = 1) => {
+const handleSearch = async (page = 1,id) => {
   if (searchQuery.value === '') {
     return message.error('请输入搜索关键字');
   }else{
-    router.push({name:'search',query:{keyword:searchQuery.value}})
+    console.log(id)
+    router.push({name:'search',query:{keyword:searchQuery.value,courseClass:id?? route.query.courseClass}})
   }
   loading.value = true
   try {
     const params = {
       page,
       size: pagination.value.pageSize,
+      tagId:id ?? route.query.courseClass,
       //   searchType: searchType.value,
       titleOrDescription: searchQuery.value
     }
@@ -89,7 +112,7 @@ const formatDate = (dateString) => {
 }
 
 onMounted(() => {
-  handleSearch()
+  getClassifyData();
 })
 </script>
 
@@ -115,6 +138,15 @@ onMounted(() => {
           </a-input-search>
         </div>
       </div>
+
+      <a-card class="tag" :loading="classLoading">
+        <Classify
+            :data="classifyData"
+            :selectedId="selectedId"
+            v-if="classifyData.length"
+            @change="handleClassifyChange"
+        />
+      </a-card>
 
       <!-- Tabs Section -->
       <div class="bg-white rounded-lg shadow-sm p-6">

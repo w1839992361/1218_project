@@ -14,6 +14,18 @@ import {
   LikeOutlined,
 } from "@ant-design/icons-vue";
 
+
+import {
+  EditOutlined,
+  UploadOutlined,
+  MoreOutlined,
+  LoadingOutlined,
+  PlusOutlined,
+  MinusOutlined,
+  DownOutlined,
+  RightOutlined
+} from "@ant-design/icons-vue";
+
 import {useRoute} from "vue-router";
 
 const route = useRoute();

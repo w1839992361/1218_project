@@ -105,7 +105,13 @@ service.interceptors.response.use(res => {
     } else if (code === 601) {
         message.warning(msg);
         return Promise.reject('error')
-    } else if (code !== 200) {
+    } else if (code === 400) {
+        message.warning(msg);
+        return Promise.reject('error')
+    } else if (code === 4000) {
+        message.warning(msg);
+        return Promise.reject('error')
+    }else if (code !== 200) {
         message.error(msg);
         return Promise.reject('error')
     } else {

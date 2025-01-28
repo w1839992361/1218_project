@@ -87,3 +87,10 @@ export function getDocsInfo(id) {
     method: 'get',
   })
 }
+export function deleteTagResource(id) {
+  return request({
+    url: `/api/teriTag/deleteTagResource/${id}`,
+    method: 'get',
+  })
+}
+
