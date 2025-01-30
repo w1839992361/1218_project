@@ -35,3 +35,12 @@ export function updateStatistics(data){
     data
   })
 }
+
+
+export function getUpdateZip(id) {
+  return request({
+    url: '/api/teriTag/getTagZip/'+id,
+    method: 'get',
+    responseType: 'blob'
+  })
+}

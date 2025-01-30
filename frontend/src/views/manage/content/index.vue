@@ -13,7 +13,7 @@ import {
   uploadDocs,
   deleteTagResource
 } from "@/api/admin/content";
-import {getTagInfoById, getTagsByParentId, getTagsById} from "@/api/other";
+import {getTagInfoById, getTagsByParentId, getTagsById, getTagsByLevel} from "@/api/other";
 import {message} from "ant-design-vue";
 
 import {
@@ -50,7 +50,19 @@ function transformNode(node, level = 1, maxLevel = 3) {
 async function getList() {
   leftLoading.value = true;
   const {data} = await getAllTree(1);
-  treeData.value = data.map((item) => transformNode(item));
+
+  treeData.value = data.filter(v=>v.id === 3 || v.id===4).map((item) => transformNode(item));
+  // --------- 下面注释部分是可以显示专题教育那些的 但是会有问题
+  // let d = await getTagsByLevel(0);
+  // let ids = d.data.filter(v => v.id !== 1).map(v => v.id);
+  // console.log(treeData.value)
+  // let arr = await Promise.all(ids.map(async v => {
+  //   let item = await getTagsById(v);
+  //   return item.data[0]; // 直接返回对象
+  // }));
+  // arr = arr.map((item) => transformNode(item));
+  // treeData.value = treeData.value.concat(arr);
+  // console.log(treeData.value)
   if (current.value) {
     handleClick(current.value);
   }
@@ -203,10 +215,14 @@ const editClassDialog = ref(false);
 const pid = ref(null);
 const current = ref(null);
 const handleClick = async (v) => {
+
   tableData.value = [];
   current.value = null;
   pid.value = null;
-  if (v.level <= 1) return;
+  if (v.level <= 1){
+    return;
+  }
+
   const {data} = await getTagsById(v.id);
   current.value = v;
   if (v.level === 2) {
@@ -718,7 +734,7 @@ const handleDeleteUnit = async (v) => {
     message.success("删除成功!");
   }
 }
-const handleDeleteRes= async (v)=>{
+const handleDeleteRes = async (v) => {
   const {code} = await deleteTagResource(v.id);
   if (code === 200) {
     let {data} = await getTagsById(unitForm.parentId);
@@ -916,14 +932,15 @@ const videoResForm = reactive({
   videoFile: "",
 });
 const videoResFormRules = {
-  tag: [{ required: true, message: "必须输入视频标签", trigger: "change" }],
-  className: [{ required: true, message: "必须输入视频名称", trigger: "change" }],
-  title: [{ required: true, message: "必须输入视频标题", trigger: "change" }],
-  description: [{ required: true, message: "必须输入视频描述", trigger: "change" }],
-  coverFile: [{ required: true, message: "必须上传视频封面", trigger: ["blur"] }],
-  videoFile: [{ required: true, message: "必须上传视频", trigger: ["blur"] }],
+  tag: [{required: true, message: "必须输入视频标签", trigger: "change"}],
+  className: [{required: true, message: "必须输入视频名称", trigger: "change"}],
+  title: [{required: true, message: "必须输入视频标题", trigger: "change"}],
+  description: [{required: true, message: "必须输入视频描述", trigger: "change"}],
+  coverFile: [{required: true, message: "必须上传视频封面", trigger: ["blur"]}],
+  videoFile: [{required: true, message: "必须上传视频", trigger: ["blur"]}],
 };
-function handleVideoCoverChange({ file }) {
+
+function handleVideoCoverChange({file}) {
   fileList.value = [];
   videoResForm.coverFile = file;
   const reader = new FileReader();
@@ -933,7 +950,8 @@ function handleVideoCoverChange({ file }) {
   reader.readAsDataURL(file);
   return false;
 }
-function handleVideoChange({ file }) {
+
+function handleVideoChange({file}) {
   fileList.value = [];
   videoResForm.videoFile = file;
   const reader = new FileReader();
@@ -943,14 +961,15 @@ function handleVideoChange({ file }) {
   reader.readAsDataURL(file);
   return false;
 }
+
 function handleVideoSubmit() {
   videoResFormRef.value.validate().then(async () => {
-    const { tag, className, title, description, resourceUUID } = toRaw(videoResForm);
+    const {tag, className, title, description, resourceUUID} = toRaw(videoResForm);
     const formData = new FormData();
     formData.append("coverFile", videoResForm.coverFile);
     formData.append("videoFile", videoResForm.videoFile);
-    const { code, data } = await uploadVideo(
-        { tag, className, title, description, resourceUUID },
+    const {code, data} = await uploadVideo(
+        {tag, className, title, description, resourceUUID},
         formData
     );
     if (code == 200) {
@@ -961,12 +980,14 @@ function handleVideoSubmit() {
     }
   });
 }
+
 function handleUploadVideo(id) {
   videoResForm.resourceUUID = id;
   videoDialog.value = true;
 }
+
 async function handleViewVideos(id) {
-  const { data, code } = await getVideoUUID(id);
+  const {data, code} = await getVideoUUID(id);
   if (code === 200 && data.length) {
     viewVideoDialog.value = true;
     uploadedVideos.value = await Promise.all(
@@ -978,6 +999,7 @@ async function handleViewVideos(id) {
     message.warning("还未上传视频！");
   }
 }
+
 const videoResetForm = () => {
   videoResFormRef.value.resetFields();
   videoDialog.value = false;
@@ -1020,21 +1042,22 @@ const columnsDocs = [
   // },
 ];
 const docResFormRules = {
-  title: [{ required: true, message: "必须输入清单标题", trigger: ["blur", "change"] }],
-  pptFile: [{ required: true, message: "必须上传 PPT 文件", trigger: ["blur"] }],
-  designClassFile: [{ required: true, message: "必须上传设计课文件", trigger: ["blur"] }],
-  homeworkFile: [{ required: true, message: "必须上传作业文件", trigger: ["blur"] }],
-  leanTaskFile: [{ required: true, message: "必须上传学习任务文件", trigger: ["blur"] }],
+  title: [{required: true, message: "必须输入清单标题", trigger: ["blur", "change"]}],
+  pptFile: [{required: true, message: "必须上传 PPT 文件", trigger: ["blur"]}],
+  designClassFile: [{required: true, message: "必须上传设计课文件", trigger: ["blur"]}],
+  homeworkFile: [{required: true, message: "必须上传作业文件", trigger: ["blur"]}],
+  leanTaskFile: [{required: true, message: "必须上传学习任务文件", trigger: ["blur"]}],
 };
+
 function handleDocSubmit() {
   docResFormRef.value.validate().then(async () => {
-    const { title, resourceUUID } = toRaw(docResForm);
+    const {title, resourceUUID} = toRaw(docResForm);
     const formData = new FormData();
     formData.append("designClassFile", docResForm.designClassFile);
     formData.append("homeworkFile", docResForm.homeworkFile);
     formData.append("leanTaskFile", docResForm.leanTaskFile);
     formData.append("pptFile", docResForm.pptFile);
-    const { code, data } = await uploadDocs({ title, resourceUUID }, formData);
+    const {code, data} = await uploadDocs({title, resourceUUID}, formData);
     if (code == 200) {
       docVideoDialog.value = false;
       //   editResForm.docsUuid = data;
@@ -1044,10 +1067,12 @@ function handleDocSubmit() {
     }
   });
 }
+
 function handleUploadDocs(id) {
   docResForm.resourceUUID = id;
   docVideoDialog.value = true;
 }
+
 const docResetForm = () => {
   docResFormRef.value.resetFields();
   docVideoDialog.value = false;
@@ -1057,28 +1082,32 @@ const designClassList = ref([]);
 const homeworkList = ref([]);
 const leanTaskList = ref([]);
 
-function handlePPTChange({ file }) {
+function handlePPTChange({file}) {
   pptList.value = [file];
   docResForm.pptFile = file;
   return false;
 }
-function handleDesignClassChange({ file }) {
+
+function handleDesignClassChange({file}) {
   designClassList.value = [file];
   docResForm.designClassFile = file;
   return false;
 }
-function handleHomeworkChange({ file }) {
+
+function handleHomeworkChange({file}) {
   homeworkList.value = [file];
   docResForm.homeworkFile = file;
   return false;
 }
-function handleLeanTaskChange({ file }) {
+
+function handleLeanTaskChange({file}) {
   leanTaskList.value = [file];
   docResForm.leanTaskFile = file;
   return false;
 }
+
 async function handleViewDocs(id) {
-  const { data, code } = await getDocsInfo(id);
+  const {data, code} = await getDocsInfo(id);
   if (code === 200 && data.length) {
     viewDocDialog.value = true;
     uploadedDocs.value = data;
@@ -1113,19 +1142,22 @@ async function handleViewDocs(id) {
                     <template #overlay>
                       <a-menu>
                         <a-menu-item key="0">
-                          <a-button size="small" type="link" @click.stop="
+                          <a-button  size="small" type="link" @click.stop="
                 addDialog = true;
-                addResForm.level = title.level + 1;
+                addResForm.level = ((title.level === 1) ?title.level + 1 : title.level + 2);
                 addResForm.parentId = treeKey;
               ">创建子级
                           </a-button>
                         </a-menu-item>
                         <a-menu-item key="1">
-                          <a-button size="small" type="link">编辑</a-button>
+                          <a-button disabled size="small" type="link">编辑</a-button>
                         </a-menu-item>
                         <a-menu-item key="2">
+<!--                          <a-button @click="handleDelete(treeKey)" size="small"-->
+<!--                                    :disabled="title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'"-->
+<!--                                    type="link">删除-->
                           <a-button @click="handleDelete(treeKey)" size="small"
-                                    :disabled="title.name ==='课程教学' || title.name === '学科课程'  || title.name === '拓展课程'"
+                                    :disabled="true"
                                     type="link">删除
                           </a-button>
                         </a-menu-item>
@@ -1696,16 +1728,16 @@ async function handleViewDocs(id) {
             </template>
             上传
           </a-button>
-<!--          <a-button-->
-<!--              class="ml-2"-->
-<!--              type="primary"-->
-<!--              @click="handleViewVideos(editResForm2.resourceUuid)"-->
-<!--          >-->
-<!--            <template #icon>-->
-<!--              <UploadOutlined/>-->
-<!--            </template>-->
-<!--            查看已上传-->
-<!--          </a-button>-->
+          <!--          <a-button-->
+          <!--              class="ml-2"-->
+          <!--              type="primary"-->
+          <!--              @click="handleViewVideos(editResForm2.resourceUuid)"-->
+          <!--          >-->
+          <!--            <template #icon>-->
+          <!--              <UploadOutlined/>-->
+          <!--            </template>-->
+          <!--            查看已上传-->
+          <!--          </a-button>-->
         </a-form-item>
         <a-form-item label="学习清单" name="docsUuid">
           <a-button type="primary" @click="handleUploadDocs(editResForm2.resourceUuid)">
@@ -1714,16 +1746,16 @@ async function handleViewDocs(id) {
             </template>
             上传
           </a-button>
-<!--          <a-button-->
-<!--              class="ml-2"-->
-<!--              type="primary"-->
-<!--              @click="handleViewDocs(editResForm2.resourceUuid)"-->
-<!--          >-->
-<!--            <template #icon>-->
-<!--              <UploadOutlined/>-->
-<!--            </template>-->
-<!--            查看已上传-->
-<!--          </a-button>-->
+          <!--          <a-button-->
+          <!--              class="ml-2"-->
+          <!--              type="primary"-->
+          <!--              @click="handleViewDocs(editResForm2.resourceUuid)"-->
+          <!--          >-->
+          <!--            <template #icon>-->
+          <!--              <UploadOutlined/>-->
+          <!--            </template>-->
+          <!--            查看已上传-->
+          <!--          </a-button>-->
         </a-form-item>
       </template>
     </a-form>
@@ -1789,16 +1821,16 @@ async function handleViewDocs(id) {
         :wrapper-col="{ span: 13 }"
     >
       <a-form-item label="视频标签" name="tag">
-        <a-input v-model:value="videoResForm.tag" />
+        <a-input v-model:value="videoResForm.tag"/>
       </a-form-item>
       <a-form-item label="视频名称" name="className">
-        <a-input v-model:value="videoResForm.className" />
+        <a-input v-model:value="videoResForm.className"/>
       </a-form-item>
       <a-form-item label="视频标题" name="title">
-        <a-input v-model:value="videoResForm.title" />
+        <a-input v-model:value="videoResForm.title"/>
       </a-form-item>
       <a-form-item label="视频描述" name="description">
-        <a-input v-model:value="videoResForm.description" />
+        <a-input v-model:value="videoResForm.description"/>
       </a-form-item>
       <a-form-item label="视频封面" name="coverFile">
         <a-upload
@@ -1810,7 +1842,7 @@ async function handleViewDocs(id) {
             class="avatar-uploader"
             :show-upload-list="false"
         >
-          <img v-if="previewImg" :src="previewImg" alt="avatar" />
+          <img v-if="previewImg" :src="previewImg" alt="avatar"/>
           <div v-else>
             <loading-outlined v-if="coverLoading"></loading-outlined>
             <plus-outlined v-else></plus-outlined>
@@ -1828,7 +1860,7 @@ async function handleViewDocs(id) {
             class="avatar-uploader"
             :show-upload-list="false"
         >
-          <video v-if="previewVideo" autoplay muted :src="previewVideo" alt="avatar" />
+          <video v-if="previewVideo" autoplay muted :src="previewVideo" alt="avatar"/>
           <div v-else>
             <loading-outlined v-if="videoLoading"></loading-outlined>
             <plus-outlined v-else></plus-outlined>
@@ -1856,7 +1888,7 @@ async function handleViewDocs(id) {
         :wrapper-col="{ span: 13 }"
     >
       <a-form-item label="清单标题" name="title">
-        <a-input v-model:value="docResForm.title" />
+        <a-input v-model:value="docResForm.title"/>
       </a-form-item>
       <!-- 上传 PPT -->
       <a-form-item label="PPT" name="pptFile">

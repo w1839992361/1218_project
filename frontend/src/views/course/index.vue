@@ -1,12 +1,13 @@
 <script setup>
 import {ref, watch, onMounted} from "vue";
 import {useRouter, useRoute} from "vue-router";
-import {PlayCircleOutlined, EyeOutlined} from "@ant-design/icons-vue";
+import {PlayCircleOutlined, EyeOutlined, DownloadOutlined} from "@ant-design/icons-vue";
 import {message} from "ant-design-vue";
-import {getTagsByParentId, getTagsByLevel, getTagsById} from "@/api/other";
+import {getTagsByParentId, getTagsByLevel, getTagsById, getUpdateZip} from "@/api/other";
+
+import TreeSelectComponent from '@/components/TreeSelectComponent.vue'
 
 import {getAllTree, getVideoUUID, getVideoInfo} from "@/api/admin/content";
-import Classify from "@/components/classify/index.vue";
 import {useVideosInfo} from "@/stores/video.js";
 
 const videoInfo = useVideosInfo();
@@ -28,15 +29,22 @@ onMounted(async () => {
   });
   let courseName = route.query?.courseName || courseTitle.value[0].name;
   selectedKeys.value = [courseName];
-  if (code === 200) {
-    let id = courseTitle.value.find(i => i.key === courseName)?.id
-    getClassifyData(id);
-  }
 });
 
 const sections = ref([]);
 
-function download(item) {
+const handleDownload = async (item) => {
+  console.log(item.id)
+  let response = await getUpdateZip(item.id);
+  let blob = new Blob([response], {type: "application/zip"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = `export_${item.name}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
   message.success("success!");
 }
 
@@ -47,49 +55,35 @@ function handleSingleClick(info) {
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + "/api/covers/stream/";
 
-const selectedId = ref();
 
-
-const currentClassify = ref();
-const classifyData = ref([]);
 const videos = ref();
 const pageLoading = ref(true);
-const classLoading = ref(true);
 const isLoading = ref(true);
 
-async function getClassifyData(id) {
-  const {data, code} = await getTagsById(id);
-  if (code === 200) {
-    classifyData.value = data[0].children;
-    selectedId.value = (+route?.query?.courseClass) ?? null;
-    classLoading.value = false;
-  }
-}
 
 async function getPages(id) {
+  pageLoading.value = true;
   const {data, code} = await getTagsById(id);
   if (code === 200 && data.length) {
-    sections.value = data[0]?.children || [];
+    sections.value = data[0]?.children ?? [];
+    console.log(sections.value)
     videoInfo.incrementViews(sections.value[0]?.id)
     pageLoading.value = false;
   }
 }
 
-function handleClassifyChange(item) {
-  sections.value = [];
-  pageLoading.value = true;
-  currentClassify.value = item;
-  console.log(item)
-  item?.id && getPages(item?.id);
-  router.push({name: 'course', query: {id: route.query.id, courseClass: item?.id, courseName: route.query.courseName}})
-}
+const treeSelectRef = ref();
+const treeId = ref();
 
 function handleMenuChange(item) {
-  // selectedId.value = null;
-  classLoading.value = true;
-  router.push({name: 'course', query: {id: route.query.id, courseName: item.key}})
-  let id = courseTitle.value.find((c) => c.name === item.key)?.id;
-  id && getClassifyData(id);
+  treeId.value = courseTitle.value.find(v => v.name === item.key)?.id;
+  router.push({name: 'course', query: {select: route.query.select, id: 1, courseName: item.key}});
+}
+
+const handleChange = (v) => {
+  if (v) {
+    getPages(v.id);
+  }
 }
 
 function handleExtensions(item) {
@@ -162,14 +156,7 @@ async function getVideos(uuid) {
     </a-menu-item>
   </a-menu>
 
-  <a-card class="tag" :loading="classLoading">
-    <Classify
-        :data="classifyData"
-        :selectedId="selectedId"
-        v-if="classifyData.length"
-        @change="handleClassifyChange"
-    />
-  </a-card>
+  <TreeSelectComponent ref="treeSelectRef" :tag-id="treeId" @change="handleChange"/>
 
   <template v-if="selectedKeys[0] === '学科课程'">
     <a-card v-if="sections.length" :loading="pageLoading" class="course-card">
@@ -179,7 +166,7 @@ async function getVideos(uuid) {
 
       <div class="course-header">
         <h3 class="text-xl font-semibold mb-4">基础课程</h3>
-        <a-row :gutter="50" >
+        <a-row :gutter="50">
           <a-col :span="4">
             <a-image
                 :width="200"
@@ -191,8 +178,8 @@ async function getVideos(uuid) {
           <a-col :span="16">
             <h4 class="text-2xl font-bold mb-2">{{ sections[0].name }}</h4>
             <p class="text-lg text-gray-600 mb-4">{{ sections[0].description }}</p>
-              <eye-outlined />
-              <span class="ml-1 text-lg text-gray-600">{{ videoInfo.getVideoData(sections[0].id).views }} 浏览量</span>
+            <eye-outlined/>
+            <span class="ml-1 text-lg text-gray-600">{{ videoInfo.getVideoData(sections[0].id).views }} 浏览量</span>
           </a-col>
         </a-row>
       </div>
@@ -212,8 +199,9 @@ async function getVideos(uuid) {
             :header="collapse.name"
         >
           <template #extra>
-            <a-button type="primary" @click.stop="download(collapse)" class="download-btn">
-              <download-outlined /> 打包下载
+            <a-button type="primary" @click.stop="handleDownload(collapse)" class="download-btn">
+              <download-outlined/>
+              打包下载
             </a-button>
           </template>
 
@@ -230,7 +218,9 @@ async function getVideos(uuid) {
                       shape="round"
                       class="video-btn"
                   >
-                    <template #icon><play-circle-outlined /></template>
+                    <template #icon>
+                      <play-circle-outlined/>
+                    </template>
                     {{ video.title }}
                   </a-button>
                 </a-space>
@@ -240,7 +230,7 @@ async function getVideos(uuid) {
         </a-collapse-panel>
       </a-collapse>
     </a-card>
-    <a-empty v-else />
+    <a-empty v-else/>
   </template>
 
   <template v-if="selectedKeys[0] === '拓展课程'">
