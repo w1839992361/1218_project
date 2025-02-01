@@ -26,6 +26,12 @@ const router = createRouter({
           component: () => import('@/views/search/index.vue'),
         },
         {
+          path: 'videoPreview',
+          name: 'VideoPreview',
+          meta: { title: '搜索视频预览' },
+          component: () => import('@/views/videoPreview/index.vue'),
+        },
+        {
           path: '/course',
           name: 'course',
           meta: { title: '课程教学' },

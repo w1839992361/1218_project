@@ -111,6 +111,10 @@ const formatDate = (dateString) => {
   })
 }
 
+const handlePreview = (v)=>{
+  router.push({name:'VideoPreview',query:{...v}})
+}
+
 onMounted(() => {
   getClassifyData();
 })
@@ -156,7 +160,7 @@ onMounted(() => {
 
         <!-- Results Section -->
         <div class="space-y-4">
-          <div v-for="result in searchResults" :key="result.id"
+          <div @click="handlePreview(result)" v-for="result in searchResults" :key="result.id"
                class="p-4 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
             <div class="flex gap-4">
               <div class="w-40 h-24 bg-gray-100 rounded overflow-hidden">
