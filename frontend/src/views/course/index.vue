@@ -18,7 +18,6 @@ const selectedKeys = ref(["course"]);
 
 const courseTitle = ref([]);
 const currentKeys = ref(1);
-
 onMounted(async () => {
   const {data, code} = await getTagsByParentId(route.query.id);
   courseTitle.value = data.map((item) => {
@@ -29,12 +28,30 @@ onMounted(async () => {
   });
   let courseName = route.query?.courseName || courseTitle.value[0].name;
   selectedKeys.value = [courseName];
+
+  if (route.query.select) {
+    let arr = JSON.parse(route.query.select);
+    for (let i = 0; i < arr.length; i++) {
+      if (i===0){
+        setTimeout(()=>{
+          treeSelectRef.value.handleClick(arr[i], i)
+        },300)
+      }
+      if (i===1){
+        setTimeout(()=>{
+          treeSelectRef.value.handleClick(arr[i], i)
+        },600)
+      }
+    }
+  }
 });
 
 const sections = ref([]);
 
+const downloadLoading = ref([]);
 const handleDownload = async (item) => {
-  console.log(item.id)
+  downloadLoading.value.push(item.id);
+  // console.log(item.id)
   let response = await getUpdateZip(item.id);
   let blob = new Blob([response], {type: "application/zip"});
   let url = URL.createObjectURL(blob);
@@ -46,6 +63,7 @@ const handleDownload = async (item) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   message.success("success!");
+  downloadLoading.value = downloadLoading.value.filter(v=>v.id !== item.id);
 }
 
 function handleSingleClick(info) {
@@ -66,7 +84,6 @@ async function getPages(id) {
   const {data, code} = await getTagsById(id);
   if (code === 200 && data.length) {
     sections.value = data[0]?.children ?? [];
-    console.log(sections.value)
     videoInfo.incrementViews(sections.value[0]?.id)
     pageLoading.value = false;
   }
@@ -77,12 +94,19 @@ const treeId = ref();
 
 function handleMenuChange(item) {
   treeId.value = courseTitle.value.find(v => v.name === item.key)?.id;
-  router.push({name: 'course', query: {select: route.query.select, id: 1, courseName: item.key}});
+  router.push({name: 'course', query: {id: 1, courseName: item.key}});
 }
 
 const handleChange = (v) => {
-  if (v) {
-    getPages(v.id);
+  sections.value = [];
+  // console.log('changggggg',v)
+  if (v.length > 0) {
+    let arr = [v[0], v[1]];
+    router.push({
+      name: 'course',
+      query: {select: JSON.stringify(arr), id: route.query.id, courseName: route.query.courseName}
+    });
+    getPages(v[v.length - 1]?.id);
   }
 }
 
@@ -138,6 +162,57 @@ async function getVideos(uuid) {
 }
 
 
+const course = ref(
+    [
+      {
+        name: '小学',
+        src: new URL('@/assets/images/home/small.png', import.meta.url).href,
+        children: []
+      },
+
+      {
+        name: '初中',
+        src: new URL('@/assets/images/home/mid.png', import.meta.url).href,
+        children: []
+      },
+
+      {
+        name: '高中',
+        id: '',
+        src: new URL('@/assets/images/home/bigmid.png', import.meta.url).href,
+        children: []
+      }
+    ]
+);
+
+const getGradeData = async () => {
+  let d = await getTagsByParentId(3);
+  let arr = d.data.filter(v => v.name === '小学' || v.name === '初中' || v.name === '高中');
+
+  arr = await Promise.all(arr.map(async v => {
+    let item = await getTagsById(v.id);
+    return item.data[0]; // 直接返回对象
+  }));
+  let names = {
+    '小学': new URL('@/assets/images/home/small.png', import.meta.url).href,
+    '初中': new URL('@/assets/images/home/mid.png', import.meta.url).href,
+    '高中': new URL('@/assets/images/home/bigmid.png', import.meta.url).href,
+  };
+  course.value = arr.map(v => {
+    return {
+      ...v,
+      src: names[v.name]
+    }
+  });
+}
+getGradeData();
+
+
+function handleCourseClick(item, child) {
+  // console.log(item, child)
+
+  // router.push({name: 'course', query: {select: JSON.stringify(arr),id:1}});
+}
 </script>
 
 <template>
@@ -155,7 +230,25 @@ async function getVideos(uuid) {
       <h3>{{ item.name }}</h3>
     </a-menu-item>
   </a-menu>
-
+  <!--  <a-row :gutter="16">-->
+  <!--    <a-col v-for="item in course" :span="24">-->
+  <!--      <a-card class="card">-->
+  <!--        <a-row :gutter="16">-->
+  <!--          <a-col :span="4">-->
+  <!--            <img :src="item.src" alt="" class="preview">-->
+  <!--          </a-col>-->
+  <!--          <a-col :span="2" v-for="child in item.children">-->
+  <!--            <a-button @click="handleCourseClick(item,child)" style="width: 100%;height:100%" type="link">{{-->
+  <!--                child.name-->
+  <!--              }}-->
+  <!--            </a-button>-->
+  <!--          </a-col>-->
+  <!--        </a-row>-->
+  <!--      </a-card>-->
+  <!--    </a-col>-->
+  <!--  </a-row>-->
+  <!--  {{JSON.parse(route.query.select).length}}-->
+  <!--      {{route.query.select}}-->
   <TreeSelectComponent ref="treeSelectRef" :tag-id="treeId" @change="handleChange"/>
 
   <template v-if="selectedKeys[0] === '学科课程'">
@@ -199,7 +292,7 @@ async function getVideos(uuid) {
             :header="collapse.name"
         >
           <template #extra>
-            <a-button type="primary" @click.stop="handleDownload(collapse)" class="download-btn">
+            <a-button type="primary" :loading="downloadLoading.includes(collapse.id)" @click.stop="handleDownload(collapse)" class="download-btn">
               <download-outlined/>
               打包下载
             </a-button>

@@ -24,7 +24,8 @@ watch(props, (v) => {
 });
 
 watch(selected, (v) => {
-  emits('change', v[v.length - 1]);
+  // console.log('sssss',v)
+  emits('change', v);
 });
 
 function transformNode(node, level = 1, maxLevel = 6) {
@@ -44,6 +45,7 @@ const initializeSelections = async () => {
   if (code === 200 && data.length) {
     let arr = [];
     arr = transformNode(data[0]);
+    // console.log(arr)
     classifyData.value = [[...arr.children]]; // 初始化第一层
     selected.value = [data[0].children[0]]; // 默认选中第一层的第一个
     updateChildren(0); // 继续展开子级
@@ -83,6 +85,9 @@ const updateChildren = (level) => {
 onMounted(initializeSelections);
 </script>
 <template>
+<!--  <span class="text-[red]">-->
+<!--    {{selected}}-->
+<!--  </span>-->
   <a-card :loading="isLoading" class="min-h-[300px]">
     <template v-for="(level, index) in classifyData" :key="index">
       <a-row class="items-center">

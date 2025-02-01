@@ -26,7 +26,7 @@ const handleDownload = async () => {
   try {
     loading.value = true;
     const version = await getUpdateVersion();
-    message.success(`增量包下载成功，版本: ${version}`);
+    message.success(`增量包下载成功，版本: ${version.data}`);
     next();
   } catch (error) {
     message.error('增量包下载失败');

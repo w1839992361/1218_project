@@ -65,9 +65,17 @@ function handleSubjectClick(id) {
 
 // 课程教学点击
 const treeSelectRef = ref();
-
+function transformNode(node, level = 1, maxLevel = 4) {
+  const {children, ...rest} = node;
+  return {
+    ...rest,
+    children: (children && level < maxLevel)
+        ? children.map((child) => transformNode(child, level + 1, maxLevel))
+        : null,
+  };
+}
 function handleCourseClick(item, child) {
-  let arr = [item, child];
+  let arr = [transformNode(item), transformNode(child)];
   router.push({name: 'course', query: {select: JSON.stringify(arr),id:1}});
 }
 
