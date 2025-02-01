@@ -3,7 +3,7 @@ import breadcrumb from "@/components/breadcrumb/index.vue";
 import Preview from "@/components/preview/index.vue";
 import {ref,watch,h} from "vue";
 import {message} from "ant-design-vue";
-import {getTagsById, updateStatistics} from "@/api/other";
+import {getTagsById, updateStatistics,getUpdateZip} from "@/api/other";
 import {getDocsInfo, getVideoInfo, getVideoUUID} from "@/api/admin/content";
 import { useVideosInfo } from '@/stores/video';
 import {
@@ -152,7 +152,25 @@ function handleCopy() {
       });
 }
 
+const downloadLoading = ref(false);
+const handleDownload = async (item) => {
+  downloadLoading.value = true;
+  // console.log(item.id)
+  let response = await getUpdateZip(item);
+  let blob = new Blob([response], {type: "application/zip"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = `export_${currentInfo.value.name}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  message.success("success!");
+  downloadLoading.value = false;
+}
 
+const teacherUrl = new URL('@/assets/images/course/hat.png', import.meta.url).href;
 </script>
 
 <template>
@@ -219,14 +237,15 @@ function handleCopy() {
           <a-col>
             <a-image
                 :width="100"
-                :src="`https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png`"
+                :preview="false"
+                :src="teacherUrl"
             >
             </a-image>
           </a-col>
           <a-col>
             <div>
-              <h3>XXXXX</h3>
-              <p>1111</p>
+              <h3>教育平台</h3>
+<!--              <p>教育</p>-->
             </div>
           </a-col>
         </a-row>
@@ -234,7 +253,7 @@ function handleCopy() {
 
       <a-card title="学习清单" class="mt-5 border-none">
         <template #extra>
-          <a-button type="text" @click.stop="handleDownClick(detail)">打包下载</a-button>
+          <a-button type="text" :loading="downloadLoading" @click.stop="handleDownload(route.query.id)">打包下载</a-button>
         </template>
         <a-row :gutter="16">
           <a-col :span="24" v-for="item in allVideos" :key="item.id">

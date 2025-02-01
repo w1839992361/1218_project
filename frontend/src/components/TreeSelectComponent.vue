@@ -11,6 +11,10 @@ const props = defineProps({
   tagId: {
     default: 3,
     type: Number
+  },
+  isDefault: {
+    default: true,
+    type: Boolean
   }
 });
 
@@ -38,6 +42,8 @@ function transformNode(node, level = 1, maxLevel = 6) {
   };
 }
 
+const isInit = ref(true);
+
 // 初始化数据
 const initializeSelections = async () => {
   isLoading.value = true;
@@ -47,14 +53,17 @@ const initializeSelections = async () => {
     arr = transformNode(data[0]);
     // console.log(arr)
     classifyData.value = [[...arr.children]]; // 初始化第一层
-    selected.value = [data[0].children[0]]; // 默认选中第一层的第一个
-    updateChildren(0); // 继续展开子级
+    if (isInit.value){
+      selected.value = [data[0].children[0]]; // 默认选中第一层的第一个
+      updateChildren(0); // 继续展开子级
+    }
     isLoading.value = false;
   }
 };
 
 // 处理点击，更新下一级的 children
-const handleClick = (item, level) => {
+const handleClick = (item, level,flag = true) => {
+  isInit.value = flag;
   selected.value[level] = item; // 选中当前级
   selected.value = selected.value.slice(0, level + 1); // 清除后续选项
   classifyData.value = classifyData.value.slice(0, level + 1); // 清除后续子级数据
@@ -85,9 +94,9 @@ const updateChildren = (level) => {
 onMounted(initializeSelections);
 </script>
 <template>
-<!--  <span class="text-[red]">-->
-<!--    {{selected}}-->
-<!--  </span>-->
+<!--    <span class="text-[red]">-->
+<!--      {{selected}}-->
+<!--    </span>-->
   <a-card :loading="isLoading" class="min-h-[300px]">
     <template v-for="(level, index) in classifyData" :key="index">
       <a-row class="items-center">

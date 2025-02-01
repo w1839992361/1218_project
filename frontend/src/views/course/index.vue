@@ -32,15 +32,15 @@ onMounted(async () => {
   if (route.query.select) {
     let arr = JSON.parse(route.query.select);
     for (let i = 0; i < arr.length; i++) {
-      if (i===0){
-        setTimeout(()=>{
-          treeSelectRef.value.handleClick(arr[i], i)
-        },300)
+      if (i === 0) {
+        setTimeout(() => {
+          treeSelectRef.value.handleClick(arr[i], i,false)
+        }, 300)
       }
-      if (i===1){
-        setTimeout(()=>{
-          treeSelectRef.value.handleClick(arr[i], i)
-        },600)
+      if (i === 1) {
+        setTimeout(() => {
+          treeSelectRef.value.handleClick(arr[i], i,false)
+        }, 600)
       }
     }
   }
@@ -63,7 +63,7 @@ const handleDownload = async (item) => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   message.success("success!");
-  downloadLoading.value = downloadLoading.value.filter(v=>v.id !== item.id);
+  downloadLoading.value = downloadLoading.value.filter(v => v.id !== item.id);
 }
 
 function handleSingleClick(info) {
@@ -84,7 +84,7 @@ async function getPages(id) {
   const {data, code} = await getTagsById(id);
   if (code === 200 && data.length) {
     sections.value = data[0]?.children ?? [];
-    videoInfo.incrementViews(sections.value[0]?.id)
+    videoInfo.incrementViews(sections.value[0]?.id);
     pageLoading.value = false;
   }
 }
@@ -115,8 +115,11 @@ function handleExtensions(item) {
 }
 
 const currentUtil = ref([]);
+const isDefault = ref(true);
+isDefault.value = !(route.query.select);
 
 async function handleCollapseChange(id) {
+  if (!id) return (isLoading.value = true);
   isLoading.value = true;
   currentUtil.value = [];
   let {data} = await getTagsById(id);
@@ -249,7 +252,7 @@ function handleCourseClick(item, child) {
   <!--  </a-row>-->
   <!--  {{JSON.parse(route.query.select).length}}-->
   <!--      {{route.query.select}}-->
-  <TreeSelectComponent ref="treeSelectRef" :tag-id="treeId" @change="handleChange"/>
+  <TreeSelectComponent ref="treeSelectRef" :is-default="isDefault" :tag-id="treeId" @change="handleChange"/>
 
   <template v-if="selectedKeys[0] === '学科课程'">
     <a-card v-if="sections.length" :loading="pageLoading" class="course-card">
@@ -292,7 +295,8 @@ function handleCourseClick(item, child) {
             :header="collapse.name"
         >
           <template #extra>
-            <a-button type="primary" :loading="downloadLoading.includes(collapse.id)" @click.stop="handleDownload(collapse)" class="download-btn">
+            <a-button type="primary" :loading="downloadLoading.includes(collapse.id)"
+                      @click.stop="handleDownload(collapse)" class="download-btn">
               <download-outlined/>
               打包下载
             </a-button>
