@@ -1,20 +1,23 @@
 <script setup>
 import {ref, onMounted, watch} from "vue";
 import {getTagsById} from "@/api/other.js";
+import {useRouter, useRoute} from "vue-router";
 
 const classifyData = ref([]); // 存储各级数据
 const selected = ref([]); // 记录每级默认选中的选项
 const isLoading = ref(true);
 const levels = ref(['', '', '学段', '年级', '学科', '版本', '册次']);
 
+const route = useRoute();
+
 const props = defineProps({
   tagId: {
-    default: 3,
+    default: null,
     type: Number
   },
-  isDefault: {
-    default: true,
-    type: Boolean
+  selected: {
+    default: [],
+    type: Array
   }
 });
 
@@ -25,10 +28,10 @@ watch(props, (v) => {
   classifyData.value = [];
   selected.value = [];
   initializeSelections();
+  console.log('reset')
 });
 
 watch(selected, (v) => {
-  // console.log('sssss',v)
   emits('change', v);
 });
 
@@ -42,28 +45,41 @@ function transformNode(node, level = 1, maxLevel = 6) {
   };
 }
 
-const isInit = ref(true);
 
 // 初始化数据
 const initializeSelections = async () => {
   isLoading.value = true;
-  const {data, code} = await getTagsById(props.tagId);
+  let id = props.tagId ?? (route.query.courseName === '拓展课程' ? 4 : 3);
+  const {data, code} = await getTagsById(id);
   if (code === 200 && data.length) {
     let arr = [];
     arr = transformNode(data[0]);
-    // console.log(arr)
     classifyData.value = [[...arr.children]]; // 初始化第一层
-    if (isInit.value){
-      selected.value = [data[0].children[0]]; // 默认选中第一层的第一个
-      updateChildren(0); // 继续展开子级
-    }
+    // 否则使用默认逻辑
+    selected.value = [data[0].children[0]]; // 默认选中第一层的第一个
+    updateChildren(0); // 继续展开子级
     isLoading.value = false;
+
+    let arr2 = props.selected;
+    if (arr2.length > 0) {
+      for (let i = 0; i < arr2.length; i++) {
+        if (i === 0) {
+          setTimeout(() => {
+            handleClick(arr2[i], i);
+          }, 1)
+        }
+        if (i === 1) {
+          setTimeout(() => {
+            handleClick(arr2[i], i);
+          }, 2)
+        }
+      }
+    }
   }
-};
+}
 
 // 处理点击，更新下一级的 children
-const handleClick = (item, level,flag = true) => {
-  isInit.value = flag;
+const handleClick = (item, level) => {
   selected.value[level] = item; // 选中当前级
   selected.value = selected.value.slice(0, level + 1); // 清除后续选项
   classifyData.value = classifyData.value.slice(0, level + 1); // 清除后续子级数据
@@ -91,12 +107,13 @@ const updateChildren = (level) => {
   }
 };
 
+
 onMounted(initializeSelections);
 </script>
 <template>
-<!--    <span class="text-[red]">-->
-<!--      {{selected}}-->
-<!--    </span>-->
+  <!--      <span class="text-[red]">-->
+  <!--        {{ selected }}-->
+  <!--      </span>-->
   <a-card :loading="isLoading" class="min-h-[300px]">
     <template v-for="(level, index) in classifyData" :key="index">
       <a-row class="items-center">

@@ -1,5 +1,5 @@
 <script setup>
-import {ref, watch, onMounted} from "vue";
+import {ref, watch, onMounted, nextTick} from "vue";
 import {useRouter, useRoute} from "vue-router";
 import {PlayCircleOutlined, EyeOutlined, DownloadOutlined} from "@ant-design/icons-vue";
 import {message} from "ant-design-vue";
@@ -15,7 +15,6 @@ const router = useRouter();
 const route = useRoute();
 
 const selectedKeys = ref(["course"]);
-
 const courseTitle = ref([]);
 const currentKeys = ref(1);
 onMounted(async () => {
@@ -28,22 +27,6 @@ onMounted(async () => {
   });
   let courseName = route.query?.courseName || courseTitle.value[0].name;
   selectedKeys.value = [courseName];
-
-  if (route.query.select) {
-    let arr = JSON.parse(route.query.select);
-    for (let i = 0; i < arr.length; i++) {
-      if (i === 0) {
-        setTimeout(() => {
-          treeSelectRef.value.handleClick(arr[i], i,false)
-        }, 300)
-      }
-      if (i === 1) {
-        setTimeout(() => {
-          treeSelectRef.value.handleClick(arr[i], i,false)
-        }, 600)
-      }
-    }
-  }
 });
 
 const sections = ref([]);
@@ -92,14 +75,21 @@ async function getPages(id) {
 const treeSelectRef = ref();
 const treeId = ref();
 
+
+const selectClass = ref([]);
+treeId.value = courseTitle.value.find(v => v.name === route.query.courseName)?.id;
+
+if (route.query.select) {
+  selectClass.value = JSON.parse(route.query.select);
+}
 function handleMenuChange(item) {
   treeId.value = courseTitle.value.find(v => v.name === item.key)?.id;
+  selectClass.value = [];
   router.push({name: 'course', query: {id: 1, courseName: item.key}});
 }
 
 const handleChange = (v) => {
   sections.value = [];
-  // console.log('changggggg',v)
   if (v.length > 0) {
     let arr = [v[0], v[1]];
     router.push({
@@ -115,8 +105,6 @@ function handleExtensions(item) {
 }
 
 const currentUtil = ref([]);
-const isDefault = ref(true);
-isDefault.value = !(route.query.select);
 
 async function handleCollapseChange(id) {
   if (!id) return (isLoading.value = true);
@@ -252,7 +240,8 @@ function handleCourseClick(item, child) {
   <!--  </a-row>-->
   <!--  {{JSON.parse(route.query.select).length}}-->
   <!--      {{route.query.select}}-->
-  <TreeSelectComponent ref="treeSelectRef" :is-default="isDefault" :tag-id="treeId" @change="handleChange"/>
+  <TreeSelectComponent ref="treeSelectRef" :selected="selectClass"  :tag-id="treeId"
+                       @change="handleChange"/>
 
   <template v-if="selectedKeys[0] === '学科课程'">
     <a-card v-if="sections.length" :loading="pageLoading" class="course-card">
