@@ -6,31 +6,21 @@ import {useRouter, useRoute} from 'vue-router';
 import {message} from 'ant-design-vue';
 import Classify from "@/components/classify/index.vue";
 import {getTagsById} from "@/api/other.js";
+import TreeSelectComponent from "@/components/TreeSelectComponent.vue";
 
-const searchType = ref('all')
 const searchQuery = ref('')
 const currentTab = ref('1')
 const loading = ref(false)
 
 const classLoading = ref(true);
-const classifyData = ref([]);
-const selectedId = ref();
-const currentClassify = ref();
-async function getClassifyData(id = 3) {
-  const {data, code} = await getTagsById(id);
-  if (code === 200) {
-    classifyData.value = data[0].children;
-    selectedId.value = (+route?.query?.courseClass) ?? null;
-    console.log(selectedId)
-    classLoading.value = false;
+
+const handleChange = (v) => {
+  if (v.length > 0) {
+    handleSearch(1,v[v.length - 1]?.id);
   }
 }
-function handleClassifyChange(item) {
-  currentClassify.value = item;
-  console.log(item)
-  item?.id && handleSearch(1,item?.id);
-  router.push({name: 'search', query: {keyword:route.query.keyword, courseClass: item?.id}})
-}
+
+
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + '/api/videos/cover/';
 
@@ -62,9 +52,8 @@ const pagination = ref({
 
 const handleSearch = async (page = 1,id) => {
   if (searchQuery.value === '') {
-    return message.error('请输入搜索关键字');
+    router.push({name:'search',query:{keyword:-1,courseClass:id?? route.query.courseClass}})
   }else{
-    console.log(id)
     router.push({name:'search',query:{keyword:searchQuery.value,courseClass:id?? route.query.courseClass}})
   }
   loading.value = true
@@ -74,7 +63,7 @@ const handleSearch = async (page = 1,id) => {
       size: pagination.value.pageSize,
       tagId:id ?? route.query.courseClass,
       //   searchType: searchType.value,
-      titleOrDescription: searchQuery.value
+      titleOrDescription: searchQuery.value === '' ? -1: searchQuery.value
     }
 
     const res = await searchVideo(params)
@@ -115,9 +104,6 @@ const handlePreview = (v)=>{
   router.push({name:'VideoPreview',query:{...v}})
 }
 
-onMounted(() => {
-  getClassifyData();
-})
 </script>
 
 <template>
@@ -143,14 +129,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <a-card class="tag" :loading="classLoading">
-        <Classify
-            :data="classifyData"
-            :selectedId="selectedId"
-            v-if="classifyData.length"
-            @change="handleClassifyChange"
-        />
-      </a-card>
+      <TreeSelectComponent ref="treeSelectRef" :selected="[]"  :tag-id="3"
+                           @change="handleChange"/>
 
       <!-- Tabs Section -->
       <div class="bg-white rounded-lg shadow-sm p-6">

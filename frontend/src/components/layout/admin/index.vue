@@ -21,7 +21,10 @@ const state = reactive({
 const route = useRoute();
 const router = useRouter();
 
-const items = ref([
+const version = 'edu'; // edu
+
+
+const allItems = [
   { key: 'Statistics', icon: () => h(AreaChartOutlined), label: '资源统计', title: 'Statistics' },
   { key: 'Contents', icon: () => h(FileAddOutlined), label: '资源管理', title: 'Contents' },
   { key: 'Users', icon: () => h(UserOutlined), label: '用户管理', title: 'Users' },
@@ -29,7 +32,17 @@ const items = ref([
   { key: 'DataGet', icon: () => h(DownloadOutlined), label: '更新增量', title: 'DataGet' },
   { key: 'DataUpdate', icon: () => h(UploadOutlined), label: '上传增量', title: 'DataUpdate' },
   { key: 'Column', icon: () => h(UnorderedListOutlined), label: '栏目管理', title: 'Column' },
-]);
+];
+
+// 创建 ref 并赋值
+const items = ref([]);
+
+// 根据版本重新赋值
+if (version === 'school') {
+  items.value = allItems.filter(item => ['Statistics', 'Logs', 'DataGet'].includes(item.key));
+} else {
+  items.value = allItems;
+}
 
 onMounted(() => {
   state.selectedKeys = [route.name];

@@ -91,7 +91,7 @@ function handleMenuChange(item) {
 const handleChange = (v) => {
   sections.value = [];
   if (v.length > 0) {
-    let arr = [v[0], v[1]];
+    let arr = [v[0], v[1]].filter(vv=>vv);
     router.push({
       name: 'course',
       query: {select: JSON.stringify(arr), id: route.query.id, courseName: route.query.courseName}

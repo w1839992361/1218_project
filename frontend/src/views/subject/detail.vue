@@ -12,7 +12,7 @@ import {
   LikeOutlined,
 } from "@ant-design/icons-vue";
 import {getDocsInfo, getVideoInfo, getVideoUUID} from "@/api/admin/content";
-import {getTagsById} from "@/api/other.js";
+import {getTagsById, getUpdateZip} from "@/api/other.js";
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 const imgUrl = baseUrl + "/api/covers/stream/";
 import {useRoute} from "vue-router";
@@ -64,6 +64,24 @@ function handleResClick(item) {
 function handleDownClick(item) {
   window.open(baseUrl + '/api/videos/stream/' + item.id);
 }
+
+const downloadLoading = ref(false);
+const handleDownAllClick = async (v)=>{
+  downloadLoading.value = true;
+  // console.log(item.id)
+  let response = await getUpdateZip(v.id);
+  let blob = new Blob([response], {type: "application/zip"});
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = `export_${v.name}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  message.success("下载成功!");
+  downloadLoading.value = false;
+}
 </script>
 
 <template>
@@ -86,7 +104,7 @@ function handleDownClick(item) {
     <a-col :span="8">
       <a-card :title="'(目录)'" class="mt-5 border-none">
         <template #extra>
-          <a-button type="text" @click="handleDownClick(currentInfo)">打包下载</a-button>
+          <a-button type="text" :loading="downloadLoading" @click="handleDownAllClick(currentInfo)">打包下载</a-button>
         </template>
         <a-row :gutter="16">
           <a-col v-if="allVideos.length" :span="24" v-for="item in allVideos" :key="item.id">

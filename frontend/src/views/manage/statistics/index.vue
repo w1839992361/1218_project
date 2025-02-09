@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue';
-
+import {useVideosInfo} from "@/stores/video.js";
+const videoInfo = useVideosInfo();
+console.log(videoInfo.videos)
 const columns = [
   {
     title: '栏目',

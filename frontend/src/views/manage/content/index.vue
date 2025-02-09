@@ -667,7 +667,7 @@ const addArticleDialog = ref(false)
 const units = ref([])
 const unitForm = reactive({
   name: "",
-  parentId: 125,
+  parentId: '',
   description: "",
   code: "",
   level: 8

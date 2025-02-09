@@ -18,6 +18,10 @@ const props = defineProps({
   selected: {
     default: [],
     type: Array
+  },
+  isAll: {
+    default: false,
+    type: Boolean
   }
 });
 
@@ -32,7 +36,7 @@ watch(props, (v) => {
 });
 
 watch(selected, (v) => {
-  emits('change', v);
+  emits('change', v.filter(cv => cv));
 });
 
 function transformNode(node, level = 1, maxLevel = 6) {
@@ -53,7 +57,45 @@ const initializeSelections = async () => {
   const {data, code} = await getTagsById(id);
   if (code === 200 && data.length) {
     let arr = [];
+    let expand =
+        {
+          id: '00001',
+          name: '全部',
+          level: 2,
+          children: [
+            {
+              id: '00002',
+              name: '全部',
+              level: 3,
+              children: [
+                {
+                  id: '00003',
+                  name: '全部',
+                  level: 4,
+                  children: [
+                    {
+                      id: '00004',
+                      name: '全部',
+                      level: 5,
+                      children: [
+                        {
+                          id: '',
+                          name: '全部',
+                          level: 6,
+                        },
+                      ]
+                    },
+                  ]
+                },
+              ]
+            },
+          ]
+        }
+    if (props.isAll) {
+      data[0]?.children.unshift(expand);
+    }
     arr = transformNode(data[0]);
+
     classifyData.value = [[...arr.children]]; // 初始化第一层
     // 否则使用默认逻辑
     selected.value = [data[0].children[0]]; // 默认选中第一层的第一个
@@ -123,15 +165,16 @@ onMounted(initializeSelections);
               {{ levels[item.level] }}
             </a-col>
           </template>
-          <a-col :span="3" class="mt-2">
+<!--          <a-col :span="3" class="mt-2">-->
             <a-button
+                class="m-2"
                 shape="round"
                 @click="handleClick(item, index)"
                 :type="selected[index]?.id === item.id ? 'primary' : 'default'"
             >
               {{ item.name }}
             </a-button>
-          </a-col>
+<!--          </a-col>-->
         </template>
       </a-row>
     </template>

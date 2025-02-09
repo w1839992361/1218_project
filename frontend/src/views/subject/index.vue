@@ -63,31 +63,31 @@ getList();
           justify-content: end;
         "
       >
-        <a-button type="text"
+        <a-button @click="handlePageBannerClick(undefind,item.id)" type="text"
         >更多
           <RightOutlined/>
         </a-button>
       </a-col>
     </a-row>
-    <a-card class="page">
+    <a-card class="page border-transparent">
       <a-row :gutter="16">
         <a-col :span="12" class="cursor-pointer" @click="handlePageBannerClick(undefind,item.id)">
           <img
-              class="max-h-[340px] w-[100%] object-cover object-top"
+              class="h-[340px] w-[100%] object-cover object-top"
               :src="imgUrl+item.coverUuid"
               alt=""
           />
         </a-col>
         <a-col :span="12" class="cursor-pointer" >
           <a-row :gutter="16" v-for="child in item.children" :key="child.id" @click="handlePageClick(child)">
-            <a-col :span="8">
+            <a-col :span="9">
               <img
                   alt="preview"
                   :src="imgUrl+child.coverUuid"
-                  class="w-[100%] max-h-[140px]  mb-2"
+                  class="w-[100%] h-[110px] mb-1 object-cover object-center"
               />
             </a-col>
-            <a-col :span="12">
+            <a-col :span="11">
               <a-card-meta
                   :title="child.name"
               >
