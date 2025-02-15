@@ -52,7 +52,7 @@ const pagination = ref({
 
 const handleSearch = async (page = 1,id) => {
   if (searchQuery.value === '') {
-    router.push({name:'search',query:{keyword:-1,courseClass:id?? route.query.courseClass}})
+    router.push({name:'search',query:{keyword:'',courseClass:id?? route.query.courseClass}})
   }else{
     router.push({name:'search',query:{keyword:searchQuery.value,courseClass:id?? route.query.courseClass}})
   }
@@ -130,7 +130,7 @@ const handlePreview = (v)=>{
       </div>
 
       <TreeSelectComponent ref="treeSelectRef" :selected="[]"  :tag-id="3"
-                           @change="handleChange"/>
+                           @change="handleChange" :isAll="true"/>
 
       <!-- Tabs Section -->
       <div class="bg-white rounded-lg shadow-sm p-6">

@@ -39,6 +39,144 @@ watch(selected, (v) => {
   emits('change', v.filter(cv => cv));
 });
 
+function generateId() {
+  return 'id-' + Math.random().toString(36).substr(2, 9);
+}
+
+const handleAddAll = (data) => {
+  console.log(data)
+  let arr = data.map(v => {
+    let da = {
+      2: {
+        id: 100000,
+        parentId: v.id,
+        name: '全部',
+        level: 3,
+        children: [
+          {
+            id: 100001,
+            parentId: 100000,
+            name: '全部',
+            level: 4,
+            children: [
+              {
+                id: 100002,
+                parentId: 100001,
+                name: '全部',
+                level: 5,
+                children: [
+                  {
+                    id: v.id,
+                    parentId: 100002,
+                    name: '全部',
+                    level: 6,
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      3: {
+        id: 200000,
+        parentId: v.id,
+        name: '全部',
+        level: 4,
+        children: [
+          {
+            id: 200001,
+            parentId: 200000,
+            name: '全部',
+            level: 5,
+            children: [
+              {
+                id: v.id,
+                parentId: 200001,
+                name: '全部',
+                level: 6,
+              }
+            ]
+          }
+        ]
+      },
+      4: {
+        id: 300000,
+        parentId: v.id,
+        name: '全部',
+        level: 5,
+        children: [
+          {
+            id: v.id,
+            parentId: 300000,
+            name: '全部',
+            level: 6,
+          }
+        ]
+      },
+      5: {
+        id:  v.id,
+        parentId: v.id,
+        name: '全部',
+        level: 6,
+      }
+    }
+
+    let cd = v.children ?? [];
+
+    cd.forEach(i => {
+      let newDa3 = JSON.parse(JSON.stringify(da[3])); // 深拷贝，确保 newDa3 独立
+      newDa3.parentId = i.id;
+
+      // 递归修改 `newDa3` 的最后一个 `id`
+      let lastChild = newDa3.children[0].children[0];
+      if (lastChild) {
+        lastChild.id = i.id ; // 这里每次赋值给 `i.id`，不会被覆盖
+      }
+
+      i.children = [newDa3, ...(i.children ?? [])];
+
+      i.children.forEach(ii => {
+          if (ii.name !== '全部') {
+            let newDa4 = JSON.parse(JSON.stringify(da[4])); // 深拷贝 `da[4]`
+            newDa4.parentId = ii.id;
+            let lastChild2 = newDa4.children[0];
+            console.log(lastChild2,'2222')
+            if (lastChild2) {
+              console.log(ii.id,'idididid')
+              lastChild2.id = ii.id ; // 这里每次赋值给 `i.id`，不会被覆盖
+            }
+            ii.children = [newDa4, ...(ii.children ?? [])];
+
+            ii.children.forEach(iii=>{
+              console.log(iii,'iiiiiiiii')
+              if (iii.name !== '全部') {
+                  let newDa5 = JSON.parse(JSON.stringify(da[5])); // 深拷贝 `da[4]`
+                  newDa5.parentId = iii.id;
+                  iii.children = [newDa5, ...(iii.children ?? [])];
+                  newDa5.id = iii.id ; // 这里每次赋值给 `i.id`，不会被覆盖
+              }
+            })
+          }
+      });
+    });
+
+
+
+
+    if (da[v.level]) {
+      cd.unshift(da[v.level]); // 仅在存在时 unshift
+    }
+
+    return{
+      ...v,
+      children:cd
+    }
+  })
+  return arr;
+};
+
+// 生成对应层级的“全部”节点结构
+
 function transformNode(node, level = 1, maxLevel = 6) {
   const {children, ...rest} = node;
   return {
@@ -79,7 +217,7 @@ const initializeSelections = async () => {
                       level: 5,
                       children: [
                         {
-                          id: '',
+                          id: -1,
                           name: '全部',
                           level: 6,
                         },
@@ -92,6 +230,7 @@ const initializeSelections = async () => {
           ]
         }
     if (props.isAll) {
+      data[0].children = handleAddAll(data[0]?.children)
       data[0]?.children.unshift(expand);
     }
     arr = transformNode(data[0]);
@@ -165,16 +304,16 @@ onMounted(initializeSelections);
               {{ levels[item.level] }}
             </a-col>
           </template>
-<!--          <a-col :span="3" class="mt-2">-->
-            <a-button
-                class="m-2"
-                shape="round"
-                @click="handleClick(item, index)"
-                :type="selected[index]?.id === item.id ? 'primary' : 'default'"
-            >
-              {{ item.name }}
-            </a-button>
-<!--          </a-col>-->
+          <!--          <a-col :span="3" class="mt-2">-->
+          <a-button
+              class="m-2"
+              shape="round"
+              @click="handleClick(item, index)"
+              :type="selected[index]?.id === item.id ? 'primary' : 'default'"
+          >
+            {{ item.name }}
+          </a-button>
+          <!--          </a-col>-->
         </template>
       </a-row>
     </template>

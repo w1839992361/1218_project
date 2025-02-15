@@ -21,17 +21,17 @@ const state = reactive({
 const route = useRoute();
 const router = useRouter();
 
-const version = 'edu'; // edu
+const version = 'school'; // edu  school
 
 
 const allItems = [
-  { key: 'Statistics', icon: () => h(AreaChartOutlined), label: '资源统计', title: 'Statistics' },
-  { key: 'Contents', icon: () => h(FileAddOutlined), label: '资源管理', title: 'Contents' },
-  { key: 'Users', icon: () => h(UserOutlined), label: '用户管理', title: 'Users' },
-  { key: 'Logs', icon: () => h(ContainerOutlined), label: '操作日志', title: 'Logs' },
-  { key: 'DataGet', icon: () => h(DownloadOutlined), label: '更新增量', title: 'DataGet' },
-  { key: 'DataUpdate', icon: () => h(UploadOutlined), label: '上传增量', title: 'DataUpdate' },
-  { key: 'Column', icon: () => h(UnorderedListOutlined), label: '栏目管理', title: 'Column' },
+  { key: 'Statistics', icon: () => h(AreaChartOutlined), label: '资源统计', title: '资源统计' },
+  { key: 'Contents', icon: () => h(FileAddOutlined), label: '资源管理', title: '资源管理' },
+  { key: 'Users', icon: () => h(UserOutlined), label: '用户管理', title: '用户管理' },
+  { key: 'Logs', icon: () => h(ContainerOutlined), label: '操作日志', title: '操作日志' },
+  { key: 'DataGet', icon: () => h(DownloadOutlined), label: '更新增量', title: '更新增量' },
+  { key: 'DataUpdate', icon: () => h(UploadOutlined), label: '上传增量', title: '上传增量' },
+  { key: 'Column', icon: () => h(UnorderedListOutlined), label: '栏目管理', title: '栏目管理' },
 ];
 
 // 创建 ref 并赋值
@@ -49,7 +49,7 @@ onMounted(() => {
 })
 
 function handleClick({ item }) {
-  router.push({ name: item.title })
+  router.push({ name: item.originItemValue.key })
 }
 
 function toggleCollapsed() {
